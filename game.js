@@ -196,9 +196,7 @@ function switchVisibility(bool) {
 	pauseButton.visible = bool
 }
 
-function turnSplitBack(splitSprite) {
-	splitSprite.img = splitPowerupImage
-}
+
 
 // game flow logic
 
@@ -897,7 +895,9 @@ function ballpowerupCollision(powerup, ball) {
 		}
 	} else if (powerupTag === "split") {
 		powerup.img = splitPowerupBigImage
-		setTimeout(turnSplitBack, 50, powerup)
+		setTimeout(function (splitSprite) {
+			splitSprite.img = splitPowerupImage
+		}, 50, powerup)
 		ball.direction = random(-170, -10)
 		if (!xyContains(posToSetZero, { x: floor(powerup.x / rectSize.x), y: floor((powerup.y - topMarginSpace) / rectSize.y) })) {
 			posToSetZero.push({ x: floor(powerup.x / rectSize.x), y: floor((powerup.y - topMarginSpace) / rectSize.y) })
