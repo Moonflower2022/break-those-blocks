@@ -7,15 +7,16 @@
 
 //TODO
 
-// maybe add another buttons stats
+// maybe add another button -> stats
 // why lag T_T
-// add hover explainations for buttons in top right
+// wrap text on mode buttons
+// customize modes -> power is frequent powerups or infinite affects?
+// add hover explainations for buttons in top right!!!!
+// why rotate not work
 // finish menu buttons
+// tutorial
 
 // MAIN MENU
-// idea in ipad freeform (a moment in the game but the blocks are buttons)
-// buttons:
-// -> play
 // -> info
 //    -> include all the hotkeys
 // use ctrl/cmd + and - to adjust screen size
@@ -44,16 +45,6 @@
 // -> collecting balls (balls that hit the floor 
 // stay on the floor and when round over all them converge onto shooting point)
 
-// game over screen
-// -> play again button on right
-// -> home button on left
-
-// GAME
-// hamburger menu top right
-// -> tutorial
-//    -> how to play
-//    -> "try out the different power ups!"
-
 // modes
 // -> power (higher powerup spawn rate, more health for blocks and start with more balls)
 // -> normal
@@ -80,7 +71,7 @@ const poweredBallColor = [92, 92, 92]
 const gameOverDropDownColor = [102, 178, 255]
 const powerupBannerColor = [255, 255, 102]
 const modeRotation = ["Normal", "Hard", "Power"]
-const modeDescriptions = {Normal: "A (somewhat but not really) classic", Hard: "I actually don't expect you to get past 20 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!"}
+const modeDescriptions = {Normal: "The original flavor", Hard: "I actually don't expect you to get past 30 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!"}
 const framesPerBallShot = 5
 const rowNum = 10
 const colNum = 12
@@ -88,7 +79,7 @@ const rectSize = {
 	x: gameWindowWidth / colNum,
 	y: gameWindowHeight / rowNum
 }
-const powerupSpawnRates = {
+const powerupSpawnRatesNormal = {
 	ball: 1,
 	split: 0.1,
 	double: 0.1,
@@ -242,7 +233,7 @@ function resetGame() {
 	updateMousePos()
 }
 
-function genObjs() {
+function genObjsNormal() {
 	let posOptions = []
 	for (let i = 0; i < colNum; i++) {
 		posOptions.push(i)
@@ -271,12 +262,103 @@ function genObjs() {
 	for (let index of blockGenPositions) {
 		board[0][index] = roundNum
 	}
-	for (let powerupType in powerupSpawnRates) {
-		if (random() < powerupSpawnRates[powerupType]) {
+	for (let powerupType in powerupSpawnRatesNormal) {
+		if (random() < powerupSpawnRatesNormal[powerupType]) {
 			let insertPos = random(posOptions)
 			board[0][insertPos] = powerupType
 			posOptions.splice(posOptions.indexOf(insertPos), 1)
 		}
+	}
+}
+
+function genObjsHard() {
+	let posOptions = []
+	for (let i = 0; i < colNum; i++) {
+		posOptions.push(i)
+	}
+	let blockGenPositions = []
+	let blockGenNum;
+	if (isBetween(roundNum, 0, 30)) {
+		blockGenNum = floor(random(2, 5 + 1))
+	} else if (isBetween(roundNum, 30, 50)) {
+		blockGenNum = floor(random(2, 7 + 1))
+	} else if (isBetween(roundNum, 50, 70)) {
+		blockGenNum = floor(random(5, 11 + 1))
+	} else if (isBetween(roundNum, 70, 100)) {
+		blockGenNum = floor(random(7, 11 + 1))
+	} else if (roundNum >= 100) {
+		blockGenNum = floor(random(9, 11 + 1))
+	} else {
+		gameOn = false
+		alert("error! use find command to see where this came from.")
+	}
+	for (let i = 0; i < blockGenNum; i++) {
+		let blockPos = random(posOptions)
+		blockGenPositions.push(blockPos)
+		posOptions.splice(posOptions.indexOf(blockPos), 1)
+	}
+	for (let index of blockGenPositions) {
+		board[0][index] = roundNum*2
+	}
+	for (let powerupType in powerupSpawnRatesNormal) {
+		if (random() < powerupSpawnRatesNormal[powerupType]*2) {
+			let insertPos = random(posOptions)
+			board[0][insertPos] = powerupType
+			posOptions.splice(posOptions.indexOf(insertPos), 1)
+		}
+	}
+}
+
+function genObjsPower() {
+	let posOptions = []
+	for (let i = 0; i < colNum; i++) {
+		posOptions.push(i)
+	}
+	let insertPos = random(posOptions)
+	board[0][insertPos] = "ball"
+	posOptions.splice(posOptions.indexOf(insertPos), 1)
+	let powerupRemoveNum;
+	if (random() < 0.7){
+		powerupRemoveNum = 1
+	} else {
+		powerupRemoveNum = 2
+	}
+	let powerupsListCopy = []
+	for (let powerupType in powerupSpawnRatesNormal) {
+		if (powerupType != "ball"){
+			powerupsListCopy.push(powerupType)
+		}
+	}
+	for (let i = 0; i < powerupRemoveNum; i ++){
+		powerupsListCopy.splice(powerupsListCopy.indexOf(random(powerupsListCopy)), 1)
+	}
+	for (let powerupType of powerupsListCopy) {
+		let insertPos = random(posOptions)
+		board[0][insertPos] = powerupType
+		posOptions.splice(posOptions.indexOf(insertPos), 1)
+	}
+	let blockRemoveNum;
+	if (isBetween(roundNum, 0, 33)) {
+		blockRemoveNum = floor(random(3, 4 + 1))
+	} else if (isBetween(roundNum, 33, 66)) {
+		blockRemoveNum = floor(random(2, 3 + 1))
+	} else if (isBetween(roundNum, 66, 100)) {
+		blockRemoveNum = floor(random(1, 2 + 1))
+	} else if (roundNum >= 100) {
+		blockRemoveNum = floor(random(0, 1 + 1))
+	} else {
+		alert("error! use find command to see where this came from.")
+	}
+	for (let i = 0; i < blockRemoveNum; i ++){
+		posOptions.splice(posOptions.indexOf(random(posOptions)), 1)
+	}
+	// for (let i = 0; i < blockGenNum; i++) {
+	// 	let blockPos = random(posOptions)
+	// 	blockGenPositions.push(blockPos)
+	// 	posOptions.splice(posOptions.indexOf(blockPos), 1)
+	// }
+	for (let index of posOptions) {
+		board[0][index] = roundNum*2
 	}
 }
 
@@ -383,8 +465,17 @@ function roundIncrement(ballXPos) {
 		ballNum = ballNumProxy
 	}
 	updateBalls(balls, ballNum, ballCenterPos.x)
-
-	genObjs()
+	switch (mode){
+		case "Normal":
+			genObjsNormal()
+			break
+		case "Hard":
+			genObjsHard()
+			break
+		case "Power":
+			genObjsPower()
+			break
+	}
 	updateBlocks()
 	updatePowerups()
 	checkWin()
@@ -588,14 +679,12 @@ function menuCalls() {
 				leaderboardsButton.img = leaderboardsButtonImage
 				demoButtons.add(leaderboardsButton)
 			} else if (demoBoard[y][x] === "s") {
-				textFont(oswald, 18)
-				scoreDisplay = new Sprite(rectSize.x * (x + 1.625), rectSize.y * (y + 1) + topMarginSpace, rectSize.x*1.25, rectSize.y, "kinematic")
-				scoreDisplay.text = localStorage.getItem(mode) ? "Highscore: " + localStorage.getItem(mode) : "Highscore: None :P"
+				scoreDisplay = new Sprite(rectSize.x * (x + 1.625), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.25, rectSize.y*1.5, "kinematic")
+				scoreDisplay.color = color(37, 139, 255)
 				demoDisplays.add(scoreDisplay)
 			} else if (demoBoard[y][x] === "b") {
-				textFont(oswald, 18)
-				blocksBrokenDisplay = new Sprite(rectSize.x * (x + 0.875), rectSize.y * (y + 1) + topMarginSpace, rectSize.x*1.25, rectSize.y, "kinematic")
-				blocksBrokenDisplay.text = localStorage.getItem(mode + "Blocks") ? "Most blocks broken: " + localStorage.getItem(mode + "Blocks") : "Most blocks broken: Zero"
+				blocksBrokenDisplay = new Sprite(rectSize.x * (x + 0.875), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.25, rectSize.y*1.5, "kinematic")
+				blocksBrokenDisplay.color = color(68, 193, 255)
 				demoDisplays.add(blocksBrokenDisplay)
 			} else if (demoBoard[y][x] === "m") {
 				textFont(oswald, 26)
@@ -606,7 +695,7 @@ function menuCalls() {
 			} else if (demoBoard[y][x] === "d") {
 				switch (mode){
 					case "Normal":
-						textFont(oswald, 26)
+						textFont(oswald, 23)
 						break
 					case "Hard":
 						textFont(oswald, 16)
@@ -616,7 +705,6 @@ function menuCalls() {
 						break
 				}
 				modeDescription = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.75) + topMarginSpace, rectSize.x*1.5, rectSize.y*1.5, "kinematic")
-				modeDescription.text = modeDescriptions[mode]
 				demoDisplays.add(modeDescription)
 			} 
 			// ADD MODE BUTTON AND THE MODE SCORE DISPLAYERS 
@@ -657,11 +745,11 @@ function updateBlocks() {
 		for (let y = 0; y < rowNum; y++) {
 			if (board[y][x] != 0 && typeof board[y][x] === "number") {
 				let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
-				if (board[y][x] / roundNum === 1) {
+				if (board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum) === 1) {
 					block.color = color(...blockColors[0])
 				} else {
 					for (let i = 0; i < blockColors.length; i++) {
-						if (isBetween(board[y][x] / roundNum, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+						if (isBetween(board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
 							block.color = color(...blockColors[blockColors.length - i - 1])
 							break;
 						}
@@ -766,11 +854,11 @@ function ballBlockCollision(block) {
 	let blockNum = board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]
 	if (blockNum > 0) {
 		block.text = blockNum.toString()
-		if (blockNum / roundNum === 1) {
+		if (blockNum / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum) === 1) {
 			block.color = color(...blockColors[0])
 		} else {
 			for (let i = 0; i < blockColors.length; i++) {
-				if (isBetween(blockNum / roundNum, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+				if (isBetween(blockNum / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
 					block.color = color(...blockColors[blockColors.length - i - 1])
 					break;
 				}
@@ -897,20 +985,6 @@ function mousePressed(event) {
 			if (modeDisplay.mouse.hovering()){
 				mode = modeRotation[(modeRotation.indexOf(mode) + 1) % 3]
 				modeDisplay.text = "Mode: " + mode
-				switch (mode){
-					case "Normal":
-						modeDescription.textSize = 26
-						break
-					case "Hard":
-						modeDescription.textSize = 16
-						break
-					case "Power":
-						modeDescription.textSize = 18
-						break
-				}
-				modeDescription.text = modeDescriptions[mode]
-				scoreDisplay.text = localStorage.getItem(mode) ? "Highscore: " + localStorage.getItem(mode) : "Highscore: None :P"
-				blocksBrokenDisplay.text = localStorage.getItem(mode + "Blocks") ? "Most blocks broken: " + localStorage.getItem(mode + "Blocks") : "Most blocks broken: Zero"
 				localStorage.setItem("mode", mode)
 			}
 		}
@@ -1022,6 +1096,7 @@ function setup() {
 	createCanvas(windowWidth, windowHeight);
 	noStroke()
 	angleMode(DEGREES)
+	textAlign(CENTER, BASELINE)
 	if (localStorage.getItem("options")){
 		options = JSON.parse(localStorage.getItem("options"))
 	} else {
@@ -1116,6 +1191,7 @@ function draw() {
 			particleObj.group.removeAll()
 		}
 	}
+	
 	if (phase[0] === "game") {
 		if (phase[0] === "game" && !phase[1] && !isFiring) {
 			if (kb.pressing("ArrowLeft")) {
@@ -1150,8 +1226,8 @@ function draw() {
 		}
 		fill(0, 0, 0)
 		textFont(oswald, 30)
-		text("Score: " + (roundNum - 1).toString(), 20, 65)
-		text("Blocks broken: " + blocksBroken.toString(), 160, 65)
+		text("Score: " + (roundNum - 1).toString(), 85, 65)
+		text("Blocks broken: " + blocksBroken.toString(), 270, 65)
 		let drawPos = 410
 		for (let i in effectsDrawQueue) {
 			fill(...powerupBannerColor)
@@ -1183,32 +1259,30 @@ function draw() {
 				switch (effectsDrawQueue[i]) {
 					case "power":
 					case "ghost":
-						text("Rounds left: " + currentEffects[effectsDrawQueue[i]], drawPos + 85, 66)
+						text("Rounds left: " + currentEffects[effectsDrawQueue[i]], drawPos + 140, 66)
 						break
 					case "double":
-						text("Rounds left: " + currentEffects[effectsDrawQueue[i]], drawPos + 56, 66)
+						text("Rounds left: " + currentEffects[effectsDrawQueue[i]], drawPos + 113, 66)
 						break
 				}
 			}
-			
-
 			textFont(oswald, 15)
 			switch (effectsDrawQueue[i]) {
 				case "power":
 					image(powerPowerupImage, drawPos + 15, 35, 30, 30)
-					text("Double damage to all blocks", drawPos + 60, 40)
+					text("Double damage to all blocks", drawPos + 140, 40)
 					fill(...powerupBannerColor)
 					drawPos = drawPos + 260
 					break
 				case "double":
 					image(doublePowerupImage, drawPos + 15, 35, 30, 30)
-					text("Double ball gain", drawPos + 66, 40)
+					text("Double ball gain", drawPos + 115, 40)
 					fill(...powerupBannerColor)
 					drawPos = drawPos + 200
 					break
 				case "ghost":
 					animation(ghostPowerupAnimation, drawPos + 32, 50, 0, 2 / 3, 2 / 3)
-					text("Hold left click for ghost mode", drawPos + 60, 40)
+					text("Hold left click for ghost mode", drawPos + 150, 40)
 					fill(...powerupBannerColor)
 					drawPos = drawPos + 270
 					break
@@ -1262,23 +1336,23 @@ function draw() {
 			fill(0, 0, 0)
 			stroke(3)
 			textFont(oswald, 50)
-			text("GAME OVER", gameOverDropdown.x - 117, gameOverDropdown.y - 125)
+			text("GAME OVER", gameOverDropdown.x, gameOverDropdown.y - 125)
 			textFont(oswald, 30)
-			text("Mode: " + mode, gameOverDropdown.x - 80, gameOverDropdown.y - 75)
-			text("Score: " + (roundNum - 1).toString(), gameOverDropdown.x - 45, gameOverDropdown.y - 15)
+			text("Mode: " + mode, gameOverDropdown.x, gameOverDropdown.y - 75)
+			text("Score: " + (roundNum - 1).toString(), gameOverDropdown.x, gameOverDropdown.y - 15)
 			textFont(oswald, 22)
-			text('Highscore: ' + (localStorage.getItem(mode) ? localStorage.getItem(mode) : 'None'), gameOverDropdown.x - 57 - (localStorage.getItem(mode) ? localStorage.getItem(mode) : 'None :(').length * 3, gameOverDropdown.y + 15)
+			text('Highscore: ' + (localStorage.getItem(mode) ? localStorage.getItem(mode) : 'None'), gameOverDropdown.x, gameOverDropdown.y + 15)
 			textFont(oswald, 30)
-			text("Blocks broken: " + blocksBroken.toString(), gameOverDropdown.x - 95, gameOverDropdown.y + 70)
+			text("Blocks broken: " + blocksBroken.toString(), gameOverDropdown.x, gameOverDropdown.y + 70)
 			textFont(oswald, 22)
-			text('Most blocks broken: ' + (localStorage.getItem(mode + 'Blocks') ? localStorage.getItem(mode + 'Blocks') : 'None :('), gameOverDropdown.x - 102 - (localStorage.getItem(mode + 'Blocks') ? localStorage.getItem(mode + 'Blocks') : 'None').length * 3, gameOverDropdown.y + 102)
+			text('Most blocks broken: ' + (localStorage.getItem(mode + 'Blocks') ? localStorage.getItem(mode + 'Blocks') : 'None :('), gameOverDropdown.x, gameOverDropdown.y + 102)
 			if (newBest) {
-				text("New best!", gameOverDropdown.x - 40, gameOverDropdown.y + 150)
+				text("New best!", gameOverDropdown.x, gameOverDropdown.y + 150)
 			} else {
 				if (randomNum < 0.5) {
-					text("Better luck next time...", gameOverDropdown.x - 97, gameOverDropdown.y + 150)
+					text("Better luck next time...", gameOverDropdown.x, gameOverDropdown.y + 150)
 				} else {
-					text("Maybe you should try harder ;)", gameOverDropdown.x - 127, gameOverDropdown.y + 150)
+					text("Maybe you should try harder ;)", gameOverDropdown.x, gameOverDropdown.y + 150)
 				}
 			}
 			if (gameOverHomeButton.mouse.hovering()) {
@@ -1297,7 +1371,7 @@ function draw() {
 			rect(0, 100, windowWidth, windowHeight)
 			fill(255, 255, 255)
 			textFont(oswald, 40);
-			text("Paused", windowWidth / 2 - 60, windowHeight / 2 + topMarginSpace - 50)
+			text("Paused", windowWidth / 2, windowHeight / 2 + topMarginSpace - 50)
 			world.autoStep = false
 		} else {
 			world.autoStep = true
@@ -1337,8 +1411,8 @@ function draw() {
 		}
 		textFont(oswald, 100);
 		fill(0, 0, 0)
-		text("Break those", 479, 100)
-		text("Blocks!", 580, 200)
+		text("Break those", windowWidth/2, 100)
+		text("Blocks!", windowWidth/2, 200)
 
 		// strokeWeight(3)
 		// stroke(3)
@@ -1347,20 +1421,38 @@ function draw() {
 		rect(0, windowHeight - 55, windowWidth, 10)
 		noStroke()
 		scoreDisplay.draw()
+		textFont(oswald, 24)
+		text("Highscore:", scoreDisplay.x, scoreDisplay.y - 5)
+		text(localStorage.getItem(mode) ? localStorage.getItem(mode) : "None :P", scoreDisplay.x, scoreDisplay.y + 30)
 		blocksBrokenDisplay.draw()
+		textFont(oswald, 18)
+		text("Most blocks", blocksBrokenDisplay.x, blocksBrokenDisplay.y - 15)
+		text("broken:", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 8)
+		
+		text(localStorage.getItem(mode + "Blocks") ?  localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 30)
 		modeDisplay.draw()
-		// switch (mode){
-		// 	case "Normal":
-		// 		textFont(oswald, 26)
-		// 		break
-		// 	case "Hard":
-		// 		textFont(oswald, 16)
-		// 		break
-		// 	case "Power":
-		// 		textFont(oswald, 18)
-		// 		break
-		// }
-		// textFont(oswald, 16)
 		modeDescription.draw()
+		switch (mode){
+			case "Normal":
+				textFont(oswald, 23)
+				break
+			case "Hard":
+				textFont(oswald, 16)
+				break
+			case "Power":
+				textFont(oswald, 18)
+				break
+		}
+		text(modeDescriptions[mode]
+	}
+	if (tutorialButton.mouse.hovering()){
+		fill(...powerupBannerColor)
+		rotate(45)
+		rect(tutorialButton.x - 20, tutorialButton.y + 100, 100, 100, 10)
+		rotate(-45)
+		rect(tutorialButton.x - 50, tutorialButton.y + 30, 100, 40, 10)
+		fill(0)
+		textFont(oswald, 20)
+		text("Tutorial", tutorialButton.x, tutorialButton.y + 56)
 	}
 }
