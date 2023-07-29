@@ -1443,7 +1443,7 @@ function draw() {
 				textFont(oswald, 18)
 				break
 		}
-		text(modeDescriptions[mode]
+		text(modeDescriptions[mode])
 	}
 	if (tutorialButton.mouse.hovering()){
 		fill(...powerupBannerColor)
