@@ -12,6 +12,7 @@
 // tutorial
 // maybe revamp icons and color palette for blocks + buttons
 // and make options buttons highlight when hovered
+// favicon
 // why lag T_T
 
 // MAIN MENU
@@ -129,7 +130,7 @@ xxxxxxxxxxxx
 `;
 const mouseAngleCutoff = 5
 const slowMultiplier = 16
-const exceptionBlocks = ["x", "p", "i", "l", "m", "b", "s", "d"]
+const exceptionBlocks = ["x", "p", "t", "i", "l", "m", "b", "s", "d"]
 
 var balls, walls, blocks, testingWalls,
 	leftWall, rightWall, upWall,
