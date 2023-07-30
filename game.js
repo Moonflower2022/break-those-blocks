@@ -7,30 +7,28 @@
 
 //TODO
 
-// maybe add another button -> stats
-// why lag T_T
-// wrap text on mode buttons
-// customize modes -> power is frequent powerups or infinite affects?
 // add hover explainations for buttons in top right!!!!
 // why rotate not work
-// finish menu buttons
 // tutorial
+// why lag T_T
 
 // MAIN MENU
 // -> info
 //    -> include all the hotkeys
-// use ctrl/cmd + and - to adjust screen size
-// -> f to fullscreen
-// -> x to skip to next round
-// -> left and right arrows to aim
-// -> enter to shoot
-// -> space to speed up balls
-// -> p to pause/resume
+		// use ctrl/cmd + and - to adjust screen size
+		// -> f to fullscreen
+		// -> x to skip to next round
+		// -> left and right arrows to aim
+		// -> enter to shoot
+		// -> space to speed up balls
+		// -> p to pause/resume
 //    -> write a blurb
 //    -> contanct maybe?
-// -> leaderboards & stats
+//    -> features coming soon: tutorial and leaderboards
+// -> leaderboards 
 //    -> when clicked display smth saying this feature is coming soon!
 //    -> an input to display user's name on the scoreboard (either monitor it for extreme profanity or add some kind of check)
+// -> stats
 //    -> normal, hard, and power scores and blocks broken
 //    -> life time stats (dont put on leader boards, just display them under)
 //       -> total blocks broken
@@ -38,17 +36,11 @@
 //       -> total balls picked up
 //       -> total rounds survived
 
-
 // ANIMATION:
 // -> use of powerups
 // -> ball moving trail
 // -> collecting balls (balls that hit the floor 
 // stay on the floor and when round over all them converge onto shooting point)
-
-// modes
-// -> power (higher powerup spawn rate, more health for blocks and start with more balls)
-// -> normal
-// -> hard
 
 // sound
 // -> ball hitting block
@@ -71,7 +63,8 @@ const poweredBallColor = [92, 92, 92]
 const gameOverDropDownColor = [102, 178, 255]
 const powerupBannerColor = [255, 255, 102]
 const modeRotation = ["Normal", "Hard", "Power"]
-const modeDescriptions = {Normal: "The original flavor", Hard: "I actually don't expect you to get past 30 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!"}
+const modeTextSize = {Normal: 18, Hard: 16, Power: 18}
+const modeDescriptions = {Normal: "Presents a well-rounded challenge for players of all levels.", Hard: "I actually don't expect you to get past 30 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!"}
 const framesPerBallShot = 5
 const rowNum = 10
 const colNum = 12
@@ -125,7 +118,7 @@ xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxxxxxxxmxxx
-xlxixpsxdxbx
+txlxipsxdxbx
 xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxx5xxxxx3x2
@@ -623,19 +616,6 @@ function menuCalls() {
 	let demoTopWall = new Sprite(windowWidth / 2, 240, windowWidth, 10, "static")
 	demoTopWall.color = color(0, 0, 0)
 	demoWalls.add(demoTopWall)
-	//const exceptionBlocks = ["x", "p", "i", "l", "m", "b", "s", "d"]
-	// 	const demoDescription = `
-	// xxxxxxxxxxxx
-	// xxxxxxxxxxxx
-	// xxxxxxxxxxxx
-	// xxxxxxxxmxxx
-	// xlxixpsxdxbx
-	// xxxxxxxxxxxx
-	// xxxxxxxxxxxx
-	// xxx5xxxbx3x2
-	// xxxxxxxxxxxx
-	// xxxxxxxxxxxx
-	// `;
 	demoBoard = generateBoardFromDescription(demoDescription, x => x)
 
 	demoBalls.collide(walls)
@@ -669,13 +649,17 @@ function menuCalls() {
 				playButton.img = playButtonImage
 				demoButtons.add(playButton)
 			} else if (demoBoard[y][x] === "i") {
-				infoButton = new Sprite(rectSize.x * (x + 1), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y * 2, "kinematic")
+				infoButton = new Sprite(rectSize.x * (x + 0.4), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y * 2, "kinematic")
 				infoButton.img = infoButtonImage
 				demoButtons.add(infoButton)
 			} else if (demoBoard[y][x] === "l") {
-				leaderboardsButton = new Sprite(rectSize.x * (x + 1), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y * 2, "kinematic")
+				leaderboardsButton = new Sprite(rectSize.x * (x + 0.8), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y * 2, "kinematic")
 				leaderboardsButton.img = leaderboardsButtonImage
 				demoButtons.add(leaderboardsButton)
+			} else if (demoBoard[y][x] === "t") {
+				statsButton = new Sprite(rectSize.x * (x + 1.2), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y*2, "kinematic")
+				statsButton.img = statsButtonImage
+				demoDisplays.add(statsButton)
 			} else if (demoBoard[y][x] === "s") {
 				scoreDisplay = new Sprite(rectSize.x * (x + 1.625), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.25, rectSize.y*1.5, "kinematic")
 				scoreDisplay.color = color(37, 139, 255)
@@ -691,18 +675,9 @@ function menuCalls() {
 				modeDisplay.color = color(0, 102, 204)
 				demoDisplays.add(modeDisplay)
 			} else if (demoBoard[y][x] === "d") {
-				switch (mode){
-					case "Normal":
-						textFont(oswald, 23)
-						break
-					case "Hard":
-						textFont(oswald, 16)
-						break
-					case "Power":
-						textFont(oswald, 18)
-						break
-				}
+				textFont(oswald, modeTextSize[mode])
 				modeDescription = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.75) + topMarginSpace, rectSize.x*1.5, rectSize.y*1.5, "kinematic")
+				modeDescription.color = color(101, 155, 222)
 				demoDisplays.add(modeDescription)
 			} 
 			// ADD MODE BUTTON AND THE MODE SCORE DISPLAYERS 
@@ -931,6 +906,33 @@ function mouseMoved() {
 	if (phase[0] === "game" && !phase[1] && !isFiring && mouseY > 100 && !options.pause) {
 		updateMousePos()
 	}
+	if (phase[0] === "menu"){
+		if (playButton.mouse.hovering()) {
+			playButton.img = playButtonHighlightedImage
+		} else {
+			playButton.img = playButtonImage
+		}
+		if (infoButton.mouse.hovering()){
+			infoButton.img = infoButtonHighlightedImage
+		} else {
+			infoButton.img = infoButtonImage
+		}
+		if (leaderboardsButton.mouse.hovering()) {
+			leaderboardsButton.img = leaderboardsButtonHighlightedImage
+		} else {
+			leaderboardsButton.img = leaderboardsButtonImage
+		}
+		if (statsButton.mouse.hovering()){
+			statsButton.img = statsButtonHighlightedImage
+		} else {
+			statsButton.img = statsButtonImage
+		}
+		if (modeDisplay.mouse.hovering()){
+			modeDisplay.color = color(0, 118, 234)
+		} else {
+			modeDisplay.color = color(0, 102, 204)
+		}
+	}
 }
 
 function mousePressed(event) {
@@ -1070,16 +1072,24 @@ function preload() {
 	powerPowerupImage = loadImage("assets/powerups/power powerup.png")
 	doublePowerupImage = loadImage("assets/powerups/double powerup.png")
 	// button graphics
-	homeButtonImage = loadImage("assets/buttons/home button.png")
-	homeButtonHighlightedImage = loadImage("assets/buttons/home button highlighted.png")
+
+	// menu
+	playButtonImage = loadImage("assets/buttons/play button.png")
+	playButtonHighlightedImage = loadImage("assets/buttons/play button highlighted.png")
 	infoButtonImage = loadImage("assets/buttons/info button.png")
 	infoButtonHighlightedImage = loadImage("assets/buttons/info button highlighted.png")
 	leaderboardsButtonImage = loadImage("assets/buttons/leaderboards.png")
 	leaderboardsButtonHighlightedImage = loadImage("assets/buttons/leaderboards highlighted.png")
+	statsButtonImage = loadImage("assets/buttons/stats.png")
+	statsButtonHighlightedImage = loadImage("assets/buttons/stats highlighted.png")
+
+	// gameover screen
+	homeButtonImage = loadImage("assets/buttons/home button.png")
+	homeButtonHighlightedImage = loadImage("assets/buttons/home button highlighted.png")
 	restartButtonImage = loadImage("assets/buttons/restart button.png")
 	restartButtonHighlightedImage = loadImage("assets/buttons/restart button highlighted.png")
-	playButtonImage = loadImage("assets/buttons/play button.png")
-	playButtonHighlightedImage = loadImage("assets/buttons/play button highlighted.png")
+
+	// options
 	musicButtonOnImage = loadImage("assets/buttons/music on.png")
 	musicButtonOffImage = loadImage("assets/buttons/music off.png")
 	soundButtonOnImage = loadImage("assets/buttons/sound on.png")
@@ -1089,6 +1099,7 @@ function preload() {
 	autoSkipButtonImage = loadImage("assets/buttons/auto skip.png")
 	noAutoSkipButtonImage = loadImage("assets/buttons/no auto skip.png")
 	tutorialButtonImage = loadImage("assets/buttons/tutorial.png")
+
 	oswald = loadFont("assets/oswald.ttf")
 }
 
@@ -1389,26 +1400,6 @@ function draw() {
 				demoBallsShotFrame = null
 			}
 		}
-		if (playButton.mouse.hovering()) {
-			playButton.img = playButtonHighlightedImage
-		} else {
-			playButton.img = playButtonImage
-		}
-		if (infoButton.mouse.hovering()){
-			infoButton.img = infoButtonHighlightedImage
-		} else {
-			infoButton.img = infoButtonImage
-		}
-		if (leaderboardsButton.mouse.hovering()) {
-			leaderboardsButton.img = leaderboardsButtonHighlightedImage
-		} else {
-			leaderboardsButton.img = leaderboardsButtonImage
-		}
-		if (modeDisplay.mouse.hovering()){
-			modeDisplay.color = color(0, 118, 234)
-		} else {
-			modeDisplay.color = color(0, 102, 204)
-		}
 		textFont(oswald, 100);
 		fill(0, 0, 0)
 		text("Break those", windowWidth/2, 100)
@@ -1429,21 +1420,11 @@ function draw() {
 		text("Most blocks", blocksBrokenDisplay.x, blocksBrokenDisplay.y - 15)
 		text("broken:", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 8)
 		
-		text(localStorage.getItem(mode + "Blocks") ?  localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 30)
+		text(localStorage.getItem(mode + "Blocks") ?  localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 33)
 		modeDisplay.draw()
 		modeDescription.draw()
-		switch (mode){
-			case "Normal":
-				textFont(oswald, 23)
-				break
-			case "Hard":
-				textFont(oswald, 16)
-				break
-			case "Power":
-				textFont(oswald, 18)
-				break
-		}
-		text(modeDescriptions[mode], modeDescription.x, modeDescription.y - 40, modeDescription.x + modeDescription.w/2, modeDescription.y + modeDescription.h/2)
+		textFont(oswald, modeTextSize[mode])
+		text(modeDescriptions[mode], modeDescription.x-90, modeDescription.y - 15, modeDescription.w, modeDescription.h)
 	}
 	if (tutorialButton.mouse.hovering()){
 		fill(...powerupBannerColor)
