@@ -10,6 +10,8 @@
 // add hover explainations for buttons in top right!!!!
 // why rotate not work
 // tutorial
+// maybe revamp icons and color palette for blocks + buttons
+// and make options buttons highlight when hovered
 // why lag T_T
 
 // MAIN MENU
@@ -983,6 +985,13 @@ function mousePressed(event) {
 			}
 			if (infoButton.mouse.hovering()) {
 				phase = ["menu", "info"]
+				//let xButton = 
+			}
+			if (leaderboardsButton.mouse.hovering()) {
+				phase = ["menu", "leaderboards"]
+			}
+			if (statsButton.mouse.hovering()) {
+				phase = ["menu", "stats"]
 			}
 			if (modeDisplay.mouse.hovering()){
 				mode = modeRotation[(modeRotation.indexOf(mode) + 1) % 3]
