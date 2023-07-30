@@ -580,7 +580,11 @@ function switchPhase() {
 }
 
 function resetDemoBlocks() {
+	console.log(phase[0] === "menu")
 	if (phase[0] === "menu"){
+		console.log("yes!!")
+		demoBoard = generateBoardFromDescription(demoDescription, x => x)
+		textFont(oswald, 18)
 		for (let x = 0; x < colNum; x++) {
 			for (let y = 0; y < rowNum; y++) {
 				if (parseInt(demoBoard[y][x]) && parseInt(demoBoard[y][x]) > 0) {
@@ -602,8 +606,6 @@ function resetDemoBlocks() {
 				}
 			}
 		}
-		demoBoard = generateBoardFromDescription(demoDescription, x => x)
-		textFont(oswald, 18)
 	}
 }
 
@@ -1479,7 +1481,7 @@ function draw() {
 		textFont(oswald, modeTextSize[mode])
 		text(modeDescriptions[mode], modeDescription.x-90, modeDescription.y - 15, modeDescription.w, modeDescription.h)
 		if (phase[1]){
-			fill(0, 80)
+			fill(0, 40)
 			rect(0, 0, windowWidth, windowHeight)
 			fill(123, 175, 226)
 			rect(220, 100, windowWidth - 220*2, windowHeight - 100*2)
