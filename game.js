@@ -909,7 +909,7 @@ function mouseMoved() {
 	if (phase[0] === "game" && !phase[1] && !isFiring && mouseY > 100 && !options.pause) {
 		updateMousePos()
 	}
-	if (phase[0] === "menu"){
+	if (phase[0] === "menu" && !phase[1]){
 		if (playButton.mouse.hovering()) {
 			playButton.img = playButtonHighlightedImage
 		} else {
@@ -1000,32 +1000,34 @@ function mousePressed(event) {
 				localStorage.setItem("mode", mode)
 			}
 		}
-		if (musicButton.mouse.hovering()) {
-			options.music = !options.music
-			musicButton.img = options.music ? musicButtonOnImage : musicButtonOffImage
-			let tempOptions = JSON.parse(localStorage.getItem("options"))
-			tempOptions.music = options.music
-			localStorage.setItem("options", JSON.stringify(tempOptions))
-		}
-		if (soundButton.mouse.hovering()) {
-			options.sound = !options.sound
-			soundButton.img = options.sound ? soundButtonOnImage : soundButtonOffImage
-			let tempOptions = JSON.parse(localStorage.getItem("options"))
-			tempOptions.sound = options.sound
-			localStorage.setItem("options", JSON.stringify(tempOptions))
-		}
-		if (autoSkipButton.mouse.hovering()) {
-			options.autoSkip = !options.autoSkip
-			autoSkipButton.img = options.autoSkip ? autoSkipButtonImage : noAutoSkipButtonImage
-			if (phase[0] === "game" && !phase[1] && checkEmpty(board, [0, "split"]) && options.autoSkip) {
-				skip()
+		if (!(phase[0] === "menu" && phase[1])){
+			if (musicButton.mouse.hovering()) {
+				options.music = !options.music
+				musicButton.img = options.music ? musicButtonOnImage : musicButtonOffImage
+				let tempOptions = JSON.parse(localStorage.getItem("options"))
+				tempOptions.music = options.music
+				localStorage.setItem("options", JSON.stringify(tempOptions))
 			}
-			let tempOptions = JSON.parse(localStorage.getItem("options"))
-			tempOptions.autoSkip = options.autoSkip
-			localStorage.setItem("options", JSON.stringify(tempOptions))
-		}
-		if (tutorialButton.mouse.hovering()) {
-			showTutorial()
+			if (soundButton.mouse.hovering()) {
+				options.sound = !options.sound
+				soundButton.img = options.sound ? soundButtonOnImage : soundButtonOffImage
+				let tempOptions = JSON.parse(localStorage.getItem("options"))
+				tempOptions.sound = options.sound
+				localStorage.setItem("options", JSON.stringify(tempOptions))
+			}
+			if (autoSkipButton.mouse.hovering()) {
+				options.autoSkip = !options.autoSkip
+				autoSkipButton.img = options.autoSkip ? autoSkipButtonImage : noAutoSkipButtonImage
+				if (phase[0] === "game" && !phase[1] && checkEmpty(board, [0, "split"]) && options.autoSkip) {
+					skip()
+				}
+				let tempOptions = JSON.parse(localStorage.getItem("options"))
+				tempOptions.autoSkip = options.autoSkip
+				localStorage.setItem("options", JSON.stringify(tempOptions))
+			}
+			if (tutorialButton.mouse.hovering()) {
+				showTutorial()
+			}
 		}
 		if (phase[0] === "game" && !phase[1] && pauseButton.mouse.hovering()) {
 			pauseButtonCalls()
@@ -1415,9 +1417,6 @@ function draw() {
 		text("Break those", windowWidth/2, 100)
 		text("Blocks!", windowWidth/2, 200)
 
-		// strokeWeight(3)
-		// stroke(3)
-		// line(windowWidth/2, 0, windowWidth/2, windowHeight)
 		rect(0, 235, windowWidth, 10)
 		rect(0, windowHeight - 55, windowWidth, 10)
 		noStroke()
@@ -1445,5 +1444,8 @@ function draw() {
 		fill(0)
 		textFont(oswald, 20)
 		text("Tutorial", tutorialButton.x, tutorialButton.y + 56)
+	}
+	if (phase[1] === "info"){
+		rect()
 	}
 }
