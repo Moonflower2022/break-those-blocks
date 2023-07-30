@@ -135,12 +135,12 @@ const exceptionBlocks = ["x", "p", "t", "i", "l", "m", "b", "s", "d"]
 var balls, walls, blocks, testingWalls,
 	leftWall, rightWall, upWall,
 	downWall, powerups,
-	playButton, infoButton, leaderboardsButton,
+	playButton, infoButton, leaderboardsButton, statsButton,
 	scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription,
 	gameOverDropdown, demoSpriteGroups, demoBalls,
-	demoBlocks, demoBoard, musicButton,
+	demoBlocks, demoBoard, demoTopWall, musicButton,
 	soundButton, pauseButton, tutorialButton,
-	autoSkipButton, // sprites + sprite groups including some signs and buttons
+	autoSkipButton, closeButton, // sprites + sprite groups including some signs and buttons
 	mouseAngle, board, firstX, randomNum, demoBallsShotFrame, demoBallsToShoot;// game logic
 
 
@@ -490,13 +490,14 @@ function applySpeedToGroup(group, n, angle, timeMultiplier) {
 
 function blockExposion(block) {
 	let particleGroup = new Group()
+	particleGroup.layer = 0 
 	let particleSize = {
 		x: block.w / 8,
 		y: block.h / 4
 	}
 	for (let x = 0; x < 8; x++) {
 		for (let y = 0; y < 4; y++) {
-			let particle = new Sprite(block.x - block.w / 2 + (x + 1 / 2) * particleSize.x, block.y - block.h / 2 + (y + 1 / 2) * particleSize.y, particleSize.x, particleSize.y, "dynamic")
+			let particle = new Sprite(block.x - block.w / 2 + (x + 1 / 2) * particleSize.x, block.y - block.h / 2 + (y + 1 / 2) * particleSize.y, particleSize.x, particleSize.y, "d")
 			particle.color = block.color
 			particle.direction = random(0, 360)
 			particle.speed = 5
@@ -505,7 +506,7 @@ function blockExposion(block) {
 		}
 	}
 
-	for (let group of [balls, downWall, blocks, powerups, gameOverHomeButton, gameOverPlayAgainButton, demoBalls, demoBlocks, playButton, infoButton, leaderboardsButton, scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription]){
+	for (let group of [balls, downWall, blocks, powerups, gameOverHomeButton, gameOverPlayAgainButton, demoBalls, demoBlocks, playButton, infoButton, leaderboardsButton, scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription, closeButton]){
 		particleGroup.overlap(group)
 	}
 	particleGroup.collide(walls)
@@ -563,9 +564,7 @@ function skip() {
 function pauseButtonCalls(){
 	options.pause = !options.pause
 	pauseButton.img = options.pause ? resumeButtonImage : pauseButtonImage
-	if (!options.pause && !isFiring) {
-		updateMousePos()
-	}
+	mouseMoved()
 }
 
 function switchPhase() {
@@ -615,8 +614,7 @@ function menuCalls() {
 	let demoWalls = new Group();
 	let demoButtons = new Group();
 	let demoDisplays = new Group();
-
-	let demoTopWall = new Sprite(windowWidth / 2, 240, windowWidth, 10, "static")
+	demoTopWall = new Sprite(windowWidth / 2, 240, windowWidth, 10, "static")
 	demoTopWall.color = color(0, 0, 0)
 	demoWalls.add(demoTopWall)
 	demoBoard = generateBoardFromDescription(demoDescription, x => x)
@@ -936,6 +934,13 @@ function mouseMoved() {
 			modeDisplay.color = color(0, 102, 204)
 		}
 	}
+	if (phase[0] === "menu" && phase[1]){
+		if (closeButton.mouse.hovering()){
+			closeButton.img = closeButtonHighlightedImage
+		} else {
+			closeButton.img = closeButtonImage
+		}
+	}
 }
 
 function mousePressed(event) {
@@ -986,18 +991,28 @@ function mousePressed(event) {
 			}
 			if (infoButton.mouse.hovering()) {
 				phase = ["menu", "info"]
-				//let xButton = 
+				closeButton.visible = true
 			}
 			if (leaderboardsButton.mouse.hovering()) {
 				phase = ["menu", "leaderboards"]
+				closeButton.visible = true
 			}
 			if (statsButton.mouse.hovering()) {
 				phase = ["menu", "stats"]
+				closeButton.visible = true
 			}
 			if (modeDisplay.mouse.hovering()){
 				mode = modeRotation[(modeRotation.indexOf(mode) + 1) % 3]
 				modeDisplay.text = "Mode: " + mode
 				localStorage.setItem("mode", mode)
+			}
+		}
+		if (phase[0] === "menu" && phase[1]){
+			if (closeButton.mouse.hovering()){
+				phase = ["menu"]
+				closeButton.visible = false
+				closeButton.img = closeButtonImage
+				mouseMoved()
 			}
 		}
 		if (!(phase[0] === "menu" && phase[1])){
@@ -1095,6 +1110,10 @@ function preload() {
 	statsButtonImage = loadImage("assets/buttons/stats.png")
 	statsButtonHighlightedImage = loadImage("assets/buttons/stats highlighted.png")
 
+	// menu + 
+	closeButtonImage = loadImage("assets/buttons/close.png")
+	closeButtonHighlightedImage = loadImage("assets/buttons/close highlighted.png")
+
 	// gameover screen
 	homeButtonImage = loadImage("assets/buttons/home button.png")
 	homeButtonHighlightedImage = loadImage("assets/buttons/home button highlighted.png")
@@ -1183,11 +1202,14 @@ function setup() {
 	} else {
 		soundButton.img = soundButtonOffImage
 	}
-	
+	closeButton = new Sprite(1165, 155, 64, 64, "kinematic")
+	closeButton.img = closeButtonImage
+	closeButton.visible = false
 	// collision logic
 
 	balls.collide(walls)
 	balls.overlap(balls)
+	balls.overlap(closeButton)
 	balls.collide(downWall, ballDownWallCollision)
 	blocks.collide(balls, ballBlockCollision)
 	menuCalls()
@@ -1335,6 +1357,9 @@ function draw() {
 		blocks.draw()
 		powerups.draw()
 		downWall.draw()
+		for (let particleGroup of allParticles){
+			particleGroup.group.draw()
+		}
 		if (!ballsInAir) {
 			stroke(0)
 			strokeWeight(2)
@@ -1421,6 +1446,16 @@ function draw() {
 		rect(0, windowHeight - 55, windowWidth, 10)
 		noStroke()
 		scoreDisplay.draw()
+		for (let spriteObject of [playButton, infoButton, leaderboardsButton, statsButton, musicButton, soundButton, tutorialButton,
+			autoSkipButton, ]){
+			spriteObject.draw()
+		}
+		for (let spriteObject of demoSpriteGroups){
+			spriteObject.draw()
+		}
+		for (let spriteObject of allParticles){
+			spriteObject.group.draw()
+		}
 		textFont(oswald, 24)
 		text("Highscore:", scoreDisplay.x, scoreDisplay.y - 5)
 		text(localStorage.getItem(mode) ? localStorage.getItem(mode) : "None :P", scoreDisplay.x, scoreDisplay.y + 30)
@@ -1434,6 +1469,21 @@ function draw() {
 		modeDescription.draw()
 		textFont(oswald, modeTextSize[mode])
 		text(modeDescriptions[mode], modeDescription.x-90, modeDescription.y - 15, modeDescription.w, modeDescription.h)
+		if (phase[1]){
+			fill(0, 80)
+			rect(0, 0, windowWidth, windowHeight)
+			fill(123, 175, 226)
+			rect(220, 100, windowWidth - 220*2, windowHeight - 100*2)
+		}
+		if (phase[1] === "info"){
+			text()
+		}
+		if (phase[1] === "leaderboards"){
+			
+		}
+		if (phase[1] === "stats"){
+		}
+		
 	}
 	if (tutorialButton.mouse.hovering()){
 		fill(...powerupBannerColor)
@@ -1444,8 +1494,5 @@ function draw() {
 		fill(0)
 		textFont(oswald, 20)
 		text("Tutorial", tutorialButton.x, tutorialButton.y + 56)
-	}
-	if (phase[1] === "info"){
-		rect()
 	}
 }
