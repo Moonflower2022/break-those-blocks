@@ -13,6 +13,7 @@
 // maybe revamp icons and color palette for blocks + buttons
 // and make options buttons highlight when hovered
 // favicon
+// colors hard/annoying to see?
 // why lag T_T
 
 // MAIN MENU
@@ -172,6 +173,7 @@ let ballCenterPos = {
 }
 let ballNum = 1
 let ballNumProxy = 1
+let speedups = 2
 let isFiring = false
 let ballsShotFrame = 0;
 let ballsToShoot = [];
@@ -210,6 +212,7 @@ function resetGame() {
 	}
 	ballNum = 1
 	ballNumProxy = 1
+	speedups = 2
 	isFiring = false
 	ballsShotFrame = 0
 	ballsToShoot = []
@@ -434,6 +437,7 @@ function roundIncrement(ballXPos) {
 	firstX = null;
 	firstBallLanded = false;
 	ballCenterPos.x = ballXPos
+	speedups = 2
 
 	// check if a power up has reached last row
 	for (let i = 0; i < colNum; i++) {
@@ -497,7 +501,7 @@ function blockExposion(block) {
 	}
 	for (let x = 0; x < 8; x++) {
 		for (let y = 0; y < 4; y++) {
-			let particle = new Sprite(block.x - block.w / 2 + (x + 1 / 2) * particleSize.x, block.y - block.h / 2 + (y + 1 / 2) * particleSize.y, particleSize.x, particleSize.y, "d")
+			let particle = new Sprite(block.x - block.w / 2 + (x + 1 / 2) * particleSize.x, block.y - block.h / 2 + (y + 1 / 2) * particleSize.y, particleSize.x, particleSize.y, "dynamic")
 			particle.color = block.color
 			particle.direction = random(0, 360)
 			particle.speed = 5
@@ -524,6 +528,7 @@ function slowlySelfDestruct(group, n, timeMultiplier, originPhase) {
 			sprite.vel.y = sprite.vel.y + 1
 			sprite.w = sprite.w - sprite.w / 30
 			sprite.h = sprite.h - sprite.h / 30
+			//sprite.color = color(sprite.color._array[0]*255 - 16, sprite.color._array[1]*255 - 16, sprite.color._array[2]*255 - 16)
 		}
 		setTimeout(slowlySelfDestruct, 100 * timeMultiplier/3, group, n + 1, timeMultiplier, originPhase)
 	} else {
@@ -575,28 +580,30 @@ function switchPhase() {
 }
 
 function resetDemoBlocks() {
-	demoBoard = generateBoardFromDescription(demoDescription, x => x)
-	textFont(oswald, 18)
-	for (let x = 0; x < colNum; x++) {
-		for (let y = 0; y < rowNum; y++) {
-			if (parseInt(demoBoard[y][x]) && parseInt(demoBoard[y][x]) > 0) {
-				let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
-				if (parseInt(demoBoard[y][x]) / 5 === 1) {
-					block.color = color(...blockColors[0])
-				} else {
-					for (let i = 0; i < blockColors.length; i++) {
-						if (isBetween(parseInt(demoBoard[y][x]) / 5, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
-							block.color = color(...blockColors[blockColors.length - i - 1])
-							break;
+	if (phase[0] === "menu"){
+		for (let x = 0; x < colNum; x++) {
+			for (let y = 0; y < rowNum; y++) {
+				if (parseInt(demoBoard[y][x]) && parseInt(demoBoard[y][x]) > 0) {
+					let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
+					if (parseInt(demoBoard[y][x]) / 5 === 1) {
+						block.color = color(...blockColors[0])
+					} else {
+						for (let i = 0; i < blockColors.length; i++) {
+							if (isBetween(parseInt(demoBoard[y][x]) / 5, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+								block.color = color(...blockColors[blockColors.length - i - 1])
+								break;
+							}
 						}
 					}
+					block.textColor = color(255)
+					block.text = demoBoard[y][x]
+					block.strokeWeight = 0
+					demoBlocks.add(block)
 				}
-				block.textColor = color(255)
-				block.text = demoBoard[y][x]
-				block.strokeWeight = 0
-				demoBlocks.add(block)
 			}
 		}
+		demoBoard = generateBoardFromDescription(demoDescription, x => x)
+		textFont(oswald, 18)
 	}
 }
 
@@ -1066,10 +1073,11 @@ function keyPressed() {
 		if (key === "x") {
 			skip()
 		}
-		if (keyCode === 32 && ballsInAir && !isFiring){
+		if (keyCode === 32 && ballsInAir && !isFiring && speedups != 0){
 			for (let ball of balls) {
-				ball.addSpeed(2)
+				ball.speed = ball.speed*1.5
 			}
+			speedups --
 		}
 		if (keyCode === 13 && !ballsInAir) { // enter
 			shootBalls()
@@ -1220,7 +1228,6 @@ function setup() {
 //get blocks, the walls, the bottom as collision points
 
 function draw() {
-	background(180)
 	let frameModulus = phase[0] === "menu" && !kb.pressing("space") ? 32 : 2
 	for (let particleObj of allParticles){
 		if (particleObj.n >= 0){
@@ -1236,8 +1243,8 @@ function draw() {
 			particleObj.group.removeAll()
 		}
 	}
-	
 	if (phase[0] === "game") {
+		background(215, 160)
 		if (phase[0] === "game" && !phase[1] && !isFiring) {
 			if (kb.pressing("ArrowLeft")) {
 				mouseAngle++
@@ -1427,8 +1434,10 @@ function draw() {
 	} else if (phase[0] === "menu") {
 		if (kb.pressing("space")){
 			world.step(1 / (5 * slowMultiplier))
+			background(215, 180)
 		} else {
 			world.step(1 / (60 * slowMultiplier))
+			background(215, 50)
 		}
 		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot*10) === 1){
 			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, -20)
