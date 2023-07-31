@@ -1594,9 +1594,9 @@ function draw() {
 			textFont(oswald, 24)
 			text("I recommend using Ctrl/Cmd + and - to adjust the display size and playing in fullscreen mode.", windowWidth - (windowWidth / 4 + 100) - 225, 285, 450, 600)
 			//text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
-			text("Shoot the balls and break the blocks, and use unique powerups to help you! Also, try out all of the modes.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
+			text("Break the blocks with the balls, and use the powerups to help you! Try out all of the modes.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Features in progress: Leaderboards and Tutorial", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
-			text("If you notice any bugs, experience any issues, or have any questions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
+			text("If you notice any bugs, experience any issues, have any questions, or have any suggestions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
 		}
 		if (phase[1] === "leaderboards") {
 			textFont(oswald, 65)
