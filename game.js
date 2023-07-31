@@ -19,13 +19,6 @@
 // MAIN MENU
 // -> info
 //    -> include all the hotkeys
-		// use ctrl/cmd + and - to adjust screen size
-		// -> f to fullscreen
-		// -> x to skip to next round
-		// -> left and right arrows to aim
-		// -> enter to shoot
-		// -> space to speed up balls
-		// -> p to pause/resume
 //    -> write a blurb
 //    -> contanct maybe?
 //    -> features coming soon: tutorial and leaderboards
@@ -52,6 +45,7 @@
 // -> losing
 // -> clicking buttons
 // -> music
+// -> speedup
 
 // misc
 // -> achievements
@@ -67,8 +61,8 @@ const poweredBallColor = [92, 92, 92]
 const gameOverDropDownColor = [102, 178, 255]
 const powerupBannerColor = [255, 255, 102]
 const modeRotation = ["Normal", "Hard", "Power"]
-const modeTextSize = {Normal: 18, Hard: 16, Power: 18}
-const modeDescriptions = {Normal: "Presents a well-rounded challenge for players of all levels.", Hard: "I actually don't expect you to get past 30 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!"}
+const modeTextSize = { Normal: 18, Hard: 16, Power: 18 }
+const modeDescriptions = { Normal: "Presents a well-rounded challenge for players of all levels.", Hard: "I actually don't expect you to get past 30 score on this one :)", Power: "Extra powerups, extra health on blocks. Have fun!" }
 const framesPerBallShot = 5
 const rowNum = 10
 const colNum = 12
@@ -117,7 +111,7 @@ xxxxxxxxxxxx
 // xxxxxxxxxxxx
 // xxxxxxxxxxxx
 // `;
-const demoDescription = `
+const demoDescription1 = `
 xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxxxxxxxxxxx
@@ -125,10 +119,35 @@ xxxxxxxxmxxx
 txlxipsxdxbx
 xxxxxxxxxxxx
 xxxxxxxxxxxx
-xxx5xxxxx3x2
-xxxxxxxxxxxx
+xx7xx22xx5xx
+xxx3x6xxxx8x
 xxxxxxxxxxxx
 `;
+const demoDescription2 = `
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xxxxxxxxmxxx
+txlxipsxdxbx
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xx3xxx5xxxxx
+4xxx6xxxxx15
+xxxxxxxxxxxx
+`;
+const demoDescription3 = `
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xxxxxxxxmxxx
+txlxipsxdxbx
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+9xx5xxxxx3x2
+xxx7xxxx4xx1
+xxxxxxxxxxxx
+`;
+const demoDescriptionCycle = [demoDescription1, demoDescription2, demoDescription3]
 const mouseAngleCutoff = 5
 const slowMultiplier = 16
 const exceptionBlocks = ["x", "p", "t", "i", "l", "m", "b", "s", "d"]
@@ -155,6 +174,7 @@ let options = {
 	pause: false
 }
 let mode;
+let demoDescriptionCycleNum = 0
 let allParticles = []
 
 // game variables
@@ -295,10 +315,10 @@ function genObjsHard() {
 		posOptions.splice(posOptions.indexOf(blockPos), 1)
 	}
 	for (let index of blockGenPositions) {
-		board[0][index] = roundNum*2
+		board[0][index] = roundNum * 2
 	}
 	for (let powerupType in powerupSpawnRatesNormal) {
-		if (random() < powerupSpawnRatesNormal[powerupType]*2) {
+		if (random() < powerupSpawnRatesNormal[powerupType] * 2) {
 			let insertPos = random(posOptions)
 			board[0][insertPos] = powerupType
 			posOptions.splice(posOptions.indexOf(insertPos), 1)
@@ -315,18 +335,18 @@ function genObjsPower() {
 	board[0][insertPos] = "ball"
 	posOptions.splice(posOptions.indexOf(insertPos), 1)
 	let powerupRemoveNum;
-	if (random() < 0.7){
+	if (random() < 0.7) {
 		powerupRemoveNum = 1
 	} else {
 		powerupRemoveNum = 2
 	}
 	let powerupsListCopy = []
 	for (let powerupType in powerupSpawnRatesNormal) {
-		if (powerupType != "ball"){
+		if (powerupType != "ball") {
 			powerupsListCopy.push(powerupType)
 		}
 	}
-	for (let i = 0; i < powerupRemoveNum; i ++){
+	for (let i = 0; i < powerupRemoveNum; i++) {
 		powerupsListCopy.splice(powerupsListCopy.indexOf(random(powerupsListCopy)), 1)
 	}
 	for (let powerupType of powerupsListCopy) {
@@ -346,7 +366,7 @@ function genObjsPower() {
 	} else {
 		alert("error! use find command to see where this came from.")
 	}
-	for (let i = 0; i < blockRemoveNum; i ++){
+	for (let i = 0; i < blockRemoveNum; i++) {
 		posOptions.splice(posOptions.indexOf(random(posOptions)), 1)
 	}
 	// for (let i = 0; i < blockGenNum; i++) {
@@ -355,7 +375,7 @@ function genObjsPower() {
 	// 	posOptions.splice(posOptions.indexOf(blockPos), 1)
 	// }
 	for (let index of posOptions) {
-		board[0][index] = roundNum*2
+		board[0][index] = roundNum * 2
 	}
 }
 
@@ -463,7 +483,7 @@ function roundIncrement(ballXPos) {
 		ballNum = ballNumProxy
 	}
 	updateBalls(balls, ballNum, ballCenterPos.x)
-	switch (mode){
+	switch (mode) {
 		case "Normal":
 			genObjsNormal()
 			break
@@ -494,7 +514,7 @@ function applySpeedToGroup(group, n, angle, timeMultiplier) {
 
 function blockExposion(block) {
 	let particleGroup = new Group()
-	particleGroup.layer = 0 
+	particleGroup.layer = 0
 	let particleSize = {
 		x: block.w / 8,
 		y: block.h / 4
@@ -510,11 +530,11 @@ function blockExposion(block) {
 		}
 	}
 
-	for (let group of [balls, downWall, blocks, powerups, gameOverHomeButton, gameOverPlayAgainButton, demoBalls, demoBlocks, playButton, infoButton, leaderboardsButton, scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription, closeButton]){
+	for (let group of [balls, downWall, blocks, powerups, gameOverHomeButton, gameOverPlayAgainButton, demoBalls, demoBlocks, playButton, infoButton, leaderboardsButton, scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription, closeButton]) {
 		particleGroup.overlap(group)
 	}
 	particleGroup.collide(walls)
-	allParticles.push({group: particleGroup, n: 30, start: frameCount})
+	allParticles.push({ group: particleGroup, n: 30, start: frameCount })
 	//slowlySelfDestruct(particleGroup, 0, timeMultiplier, phase[0])
 }
 
@@ -530,7 +550,7 @@ function slowlySelfDestruct(group, n, timeMultiplier, originPhase) {
 			sprite.h = sprite.h - sprite.h / 30
 			//sprite.color = color(sprite.color._array[0]*255 - 16, sprite.color._array[1]*255 - 16, sprite.color._array[2]*255 - 16)
 		}
-		setTimeout(slowlySelfDestruct, 100 * timeMultiplier/3, group, n + 1, timeMultiplier, originPhase)
+		setTimeout(slowlySelfDestruct, 100 * timeMultiplier / 3, group, n + 1, timeMultiplier, originPhase)
 	} else {
 		group.removeAll()
 	}
@@ -550,11 +570,11 @@ function updateMousePos() {
 	}
 }
 
-function shootBalls(){
+function shootBalls() {
 	ballsInAir = true
 	isFiring = true
 	ballsShotFrame = frameCount
-	for (let i = 0; i < balls.length; i ++){
+	for (let i = 0; i < balls.length; i++) {
 		ballsToShoot[i] = i
 	}
 }
@@ -566,7 +586,7 @@ function skip() {
 	isFiring = false
 }
 
-function pauseButtonCalls(){
+function pauseButtonCalls() {
 	options.pause = !options.pause
 	pauseButton.img = options.pause ? resumeButtonImage : pauseButtonImage
 	mouseMoved()
@@ -580,20 +600,19 @@ function switchPhase() {
 }
 
 function resetDemoBlocks() {
-	console.log(phase[0] === "menu")
-	if (phase[0] === "menu"){
-		console.log("yes!!")
-		demoBoard = generateBoardFromDescription(demoDescription, x => x)
+	if (phase[0] === "menu") {
+		demoDescriptionCycleNum = (demoDescriptionCycleNum + 1) % 3
+		demoBoard = generateBoardFromDescription(demoDescriptionCycle[demoDescriptionCycleNum], x => x)
 		textFont(oswald, 18)
 		for (let x = 0; x < colNum; x++) {
 			for (let y = 0; y < rowNum; y++) {
 				if (parseInt(demoBoard[y][x]) && parseInt(demoBoard[y][x]) > 0) {
 					let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
-					if (parseInt(demoBoard[y][x]) / 5 === 1) {
+					if (parseInt(demoBoard[y][x]) / 10 === 1) {
 						block.color = color(...blockColors[0])
 					} else {
 						for (let i = 0; i < blockColors.length; i++) {
-							if (isBetween(parseInt(demoBoard[y][x]) / 5, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+							if (isBetween(parseInt(demoBoard[y][x]) / 10, i / blockColors.length, (i + 1) / blockColors.length)) {
 								block.color = color(...blockColors[blockColors.length - i - 1])
 								break;
 							}
@@ -626,7 +645,7 @@ function menuCalls() {
 	demoTopWall = new Sprite(windowWidth / 2, 240, windowWidth, 10, "static")
 	demoTopWall.color = color(0, 0, 0)
 	demoWalls.add(demoTopWall)
-	demoBoard = generateBoardFromDescription(demoDescription, x => x)
+	demoBoard = generateBoardFromDescription(demoDescription1, x => x)
 
 	demoBalls.collide(walls)
 	demoBalls.collide(demoTopWall)
@@ -634,17 +653,17 @@ function menuCalls() {
 	demoBalls.overlap(gameOverHomeButton)
 	demoBalls.overlap(gameOverPlayAgainButton)
 	demoBlocks.collide(demoBalls, ballBlockCollisionDemo)
-	updateBalls(demoBalls, 7, colNum / 2 * rectSize.x)
+	updateBalls(demoBalls, 11, colNum / 2 * rectSize.x)
 	for (let x = 0; x < colNum; x++) {
 		for (let y = 0; y < rowNum; y++) {
 			if (parseInt(demoBoard[y][x]) && parseInt(demoBoard[y][x]) > 0) {
 				textFont(oswald, 18)
 				let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
-				if (parseInt(demoBoard[y][x]) / 5 === 1) {
+				if (parseInt(demoBoard[y][x]) / 10 === 1) {
 					block.color = color(...blockColors[0])
 				} else {
 					for (let i = 0; i < blockColors.length; i++) {
-						if (isBetween(parseInt(demoBoard[y][x]) / 5, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+						if (isBetween(parseInt(demoBoard[y][x]) / 10, i / blockColors.length, (i + 1) / blockColors.length)) {
 							block.color = color(...blockColors[blockColors.length - i - 1])
 							break;
 						}
@@ -667,36 +686,36 @@ function menuCalls() {
 				leaderboardsButton.img = leaderboardsButtonImage
 				demoButtons.add(leaderboardsButton)
 			} else if (demoBoard[y][x] === "t") {
-				statsButton = new Sprite(rectSize.x * (x + 1.2), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y*2, "kinematic")
+				statsButton = new Sprite(rectSize.x * (x + 1.2), rectSize.y * (y + 1) + topMarginSpace, rectSize.x, rectSize.y * 2, "kinematic")
 				statsButton.img = statsButtonImage
 				demoDisplays.add(statsButton)
 			} else if (demoBoard[y][x] === "s") {
-				scoreDisplay = new Sprite(rectSize.x * (x + 1.625), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.25, rectSize.y*1.5, "kinematic")
+				scoreDisplay = new Sprite(rectSize.x * (x + 1.625), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x * 1.25, rectSize.y * 1.5, "kinematic")
 				scoreDisplay.color = color(37, 139, 255)
 				demoDisplays.add(scoreDisplay)
 			} else if (demoBoard[y][x] === "b") {
-				blocksBrokenDisplay = new Sprite(rectSize.x * (x + 0.875), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.25, rectSize.y*1.5, "kinematic")
+				blocksBrokenDisplay = new Sprite(rectSize.x * (x + 0.875), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x * 1.25, rectSize.y * 1.5, "kinematic")
 				blocksBrokenDisplay.color = color(68, 193, 255)
 				demoDisplays.add(blocksBrokenDisplay)
 			} else if (demoBoard[y][x] === "m") {
 				textFont(oswald, 26)
-				modeDisplay = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x*1.5, rectSize.y, "kinematic")
+				modeDisplay = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.25) + topMarginSpace, rectSize.x * 1.5, rectSize.y, "kinematic")
 				modeDisplay.text = "Mode: " + mode
 				modeDisplay.color = color(0, 102, 204)
 				demoDisplays.add(modeDisplay)
 			} else if (demoBoard[y][x] === "d") {
 				textFont(oswald, modeTextSize[mode])
-				modeDescription = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.75) + topMarginSpace, rectSize.x*1.5, rectSize.y*1.5, "kinematic")
+				modeDescription = new Sprite(rectSize.x * (x + 1.25), rectSize.y * (y + 1.75) + topMarginSpace, rectSize.x * 1.5, rectSize.y * 1.5, "kinematic")
 				modeDescription.color = color(101, 155, 222)
 				demoDisplays.add(modeDescription)
-			} 
+			}
 			// ADD MODE BUTTON AND THE MODE SCORE DISPLAYERS 
-			
+
 		}
 	}
 	demoBallsShotFrame = frameCount
 	demoBallsToShoot = []
-	for (let i = 0; i < demoBalls.length; i ++){
+	for (let i = 0; i < demoBalls.length; i++) {
 		demoBallsToShoot[i] = i
 	}
 	//applySpeedToGroup(demoBalls, 7, -20, slowMultiplier)
@@ -728,11 +747,11 @@ function updateBlocks() {
 		for (let y = 0; y < rowNum; y++) {
 			if (board[y][x] != 0 && typeof board[y][x] === "number") {
 				let block = new Sprite(rectSize.x * (x + 1 / 2), rectSize.y * (y + 1 / 2) + topMarginSpace, rectSize.x, rectSize.y, "kinematic")
-				if (board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum) === 1) {
+				if (board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum * 2 : roundNum) === 1) {
 					block.color = color(...blockColors[0])
 				} else {
 					for (let i = 0; i < blockColors.length; i++) {
-						if (isBetween(board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+						if (isBetween(board[y][x] / (mode === "Power" || mode === "Hard" ? roundNum * 2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
 							block.color = color(...blockColors[blockColors.length - i - 1])
 							break;
 						}
@@ -795,7 +814,7 @@ function ballDownWallCollision(ball) {
 		firstBallLanded = true
 	}
 	ballsToShoot.splice(balls.indexOf(ball), 1)
-	ballsToShoot = ballsToShoot.map(function (x){
+	ballsToShoot = ballsToShoot.map(function (x) {
 		return x === null ? x : x - 1
 	})
 	ball.remove()
@@ -812,22 +831,20 @@ function ballBlockCollisionDemo(block) {
 	let blockNum = parseInt(demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)])
 	if (blockNum > 0) {
 		block.text = blockNum
-		if (blockNum / 5 === 1) {
-			block.color = color(...blockColors[0])
-		} else {
-			for (let i = 0; i < blockColors.length; i++) {
-				if (isBetween(blockNum / 5, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
-					block.color = color(...blockColors[blockColors.length - i - 1])
-					break;
-				}
+
+		for (let i = 0; i < blockColors.length; i++) {
+			if (isBetween(blockNum / 10, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+				block.color = color(...blockColors[blockColors.length - i - 1])
+				break;
 			}
 		}
+
 	} else if (blockNum <= 0) {
 		demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] = "x"
 		block.remove()
 		blockExposion(block)
 		if (checkEmpty(demoBoard, exceptionBlocks)) {
-			setTimeout(resetDemoBlocks, 6000)
+			setTimeout(resetDemoBlocks, 4000)
 		}
 	}
 }
@@ -837,14 +854,11 @@ function ballBlockCollision(block) {
 	let blockNum = board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]
 	if (blockNum > 0) {
 		block.text = blockNum.toString()
-		if (blockNum / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum) === 1) {
-			block.color = color(...blockColors[0])
-		} else {
-			for (let i = 0; i < blockColors.length; i++) {
-				if (isBetween(blockNum / (mode === "Power" || mode === "Hard" ? roundNum*2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
-					block.color = color(...blockColors[blockColors.length - i - 1])
-					break;
-				}
+
+		for (let i = 0; i < blockColors.length; i++) {
+			if (isBetween(blockNum / (mode === "Power" || mode === "Hard" ? roundNum * 2 : roundNum), i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+				block.color = color(...blockColors[blockColors.length - i - 1])
+				break;
 			}
 		}
 	} else if (blockNum <= 0) {
@@ -916,13 +930,13 @@ function mouseMoved() {
 	if (phase[0] === "game" && !phase[1] && !isFiring && mouseY > 100 && !options.pause) {
 		updateMousePos()
 	}
-	if (phase[0] === "menu" && !phase[1]){
+	if (phase[0] === "menu" && !phase[1]) {
 		if (playButton.mouse.hovering()) {
 			playButton.img = playButtonHighlightedImage
 		} else {
 			playButton.img = playButtonImage
 		}
-		if (infoButton.mouse.hovering()){
+		if (infoButton.mouse.hovering()) {
 			infoButton.img = infoButtonHighlightedImage
 		} else {
 			infoButton.img = infoButtonImage
@@ -932,19 +946,19 @@ function mouseMoved() {
 		} else {
 			leaderboardsButton.img = leaderboardsButtonImage
 		}
-		if (statsButton.mouse.hovering()){
+		if (statsButton.mouse.hovering()) {
 			statsButton.img = statsButtonHighlightedImage
 		} else {
 			statsButton.img = statsButtonImage
 		}
-		if (modeDisplay.mouse.hovering()){
+		if (modeDisplay.mouse.hovering()) {
 			modeDisplay.color = color(0, 118, 234)
 		} else {
 			modeDisplay.color = color(0, 102, 204)
 		}
 	}
-	if (phase[0] === "menu" && phase[1]){
-		if (closeButton.mouse.hovering()){
+	if (phase[0] === "menu" && phase[1]) {
+		if (closeButton.mouse.hovering()) {
 			closeButton.img = closeButtonHighlightedImage
 		} else {
 			closeButton.img = closeButtonImage
@@ -953,7 +967,7 @@ function mouseMoved() {
 }
 
 function mousePressed(event) {
-	if (event.button === 0){
+	if (event.button === 0) {
 		if (((mouseX - ballCenterPos.x) ** 2 + (mouseY - ballCenterPos.y) ** 2) > (ballDiameter / 2) ** 2 &&
 			!ballsInAir &&
 			mouseY > 100 &&
@@ -983,7 +997,7 @@ function mousePressed(event) {
 			gameOverDropdown.y = rectSize.y * 5 + topMarginSpace
 			switchPhase()
 		}
-		if (phase[0] === "menu" && !phase[1]){
+		if (phase[0] === "menu" && !phase[1]) {
 			if (playButton.mouse.hovering()) {
 				phase = ["game"]
 				switchVisibility(true)
@@ -1010,21 +1024,21 @@ function mousePressed(event) {
 				phase = ["menu", "stats"]
 				closeButton.visible = true
 			}
-			if (modeDisplay.mouse.hovering()){
+			if (modeDisplay.mouse.hovering()) {
 				mode = modeRotation[(modeRotation.indexOf(mode) + 1) % 3]
 				modeDisplay.text = "Mode: " + mode
 				localStorage.setItem("mode", mode)
 			}
 		}
-		if (phase[0] === "menu" && phase[1]){
-			if (closeButton.mouse.hovering()){
+		if (phase[0] === "menu" && phase[1]) {
+			if (closeButton.mouse.hovering()) {
 				phase = ["menu"]
 				closeButton.visible = false
 				closeButton.img = closeButtonImage
 				mouseMoved()
 			}
 		}
-		if (!(phase[0] === "menu" && phase[1])){
+		if (!(phase[0] === "menu" && phase[1])) {
 			if (musicButton.mouse.hovering()) {
 				options.music = !options.music
 				musicButton.img = options.music ? musicButtonOnImage : musicButtonOffImage
@@ -1075,11 +1089,11 @@ function keyPressed() {
 		if (key === "x") {
 			skip()
 		}
-		if (keyCode === 32 && ballsInAir && !isFiring && speedups != 0){
+		if (keyCode === 32 && ballsInAir && !isFiring && speedups != 0) {
 			for (let ball of balls) {
-				ball.speed = ball.speed*1.5
+				ball.speed = ball.speed * 1.5
 			}
-			speedups --
+			speedups--
 		}
 		if (keyCode === 13 && !ballsInAir) { // enter
 			shootBalls()
@@ -1090,13 +1104,13 @@ function keyPressed() {
 }
 
 let ballPowerupAnimation, ghostPowerupAnimation,
-splitPowerupBigImage, splitPowerupImage,
-powerPowerupImage, doublePowerupImage, homeButtonImage,
-homeButtonHighlightedImage, restartButtonImage, restartButtonHighlightedImage, playButtonImage,
-musicButtonOnImage, musicButtonOffImage,
-soundButtonOnImage, soundButtonOffImage,
-pauseButtonImage, resumeButtonImage, autoskipButtonImage,
-noAutoskipButtonImage, oswald // resources
+	splitPowerupBigImage, splitPowerupImage,
+	powerPowerupImage, doublePowerupImage, homeButtonImage,
+	homeButtonHighlightedImage, restartButtonImage, restartButtonHighlightedImage, playButtonImage,
+	musicButtonOnImage, musicButtonOffImage,
+	soundButtonOnImage, soundButtonOffImage,
+	pauseButtonImage, resumeButtonImage, autoskipButtonImage,
+	noAutoskipButtonImage, oswald // resources
 
 function preload() {
 	//powerup graphics
@@ -1149,7 +1163,7 @@ function setup() {
 	noStroke()
 	angleMode(DEGREES)
 	textAlign(CENTER, BASELINE)
-	if (localStorage.getItem("options")){
+	if (localStorage.getItem("options")) {
 		options = JSON.parse(localStorage.getItem("options"))
 	} else {
 		localStorage.setItem("options", JSON.stringify(options))
@@ -1195,19 +1209,19 @@ function setup() {
 	tutorialButton = new Sprite(windowWidth - 295 + 58 * 1 + 20, 50, 40, 40, "kinematic")
 	tutorialButton.img = tutorialButtonImage
 	autoSkipButton = new Sprite(windowWidth - 295 + 58 * 2 + 20, 50, 40, 40, "kinematic")
-	if (JSON.parse(localStorage.getItem("options")).autoSkip === false){
+	if (JSON.parse(localStorage.getItem("options")).autoSkip === false) {
 		autoSkipButton.img = noAutoSkipButtonImage
 	} else {
 		autoSkipButton.img = autoSkipButtonImage
 	}
 	musicButton = new Sprite(windowWidth - 295 + 58 * 3 + 20, 50, 40, 40, "kinematic")
-	if (JSON.parse(localStorage.getItem("options")).music === true){
+	if (JSON.parse(localStorage.getItem("options")).music === true) {
 		musicButton.img = musicButtonOnImage
 	} else {
 		musicButton.img = musicButtonOffImage
 	}
 	soundButton = new Sprite(windowWidth - 295 + 58 * 4 + 20, 50, 40, 40, "kinematic")
-	if (JSON.parse(localStorage.getItem("options")).sound === true){
+	if (JSON.parse(localStorage.getItem("options")).sound === true) {
 		soundButton.img = soundButtonOnImage
 	} else {
 		soundButton.img = soundButtonOffImage
@@ -1231,15 +1245,15 @@ function setup() {
 
 function draw() {
 	let frameModulus = phase[0] === "menu" && !kb.pressing("space") ? 32 : 2
-	for (let particleObj of allParticles){
-		if (particleObj.n >= 0){
-			if ((frameCount - particleObj.start) % frameModulus === 1 && !options.pause){
+	for (let particleObj of allParticles) {
+		if (particleObj.n >= 0) {
+			if ((frameCount - particleObj.start) % frameModulus === 1 && !options.pause) {
 				for (let particle of particleObj.group) {
 					particle.vel.y = particle.vel.y + 1
 					particle.w = particle.w - particle.w / 30
 					particle.h = particle.h - particle.h / 30
 				}
-				particleObj.n --
+				particleObj.n--
 			}
 		} else {
 			particleObj.group.removeAll()
@@ -1267,14 +1281,14 @@ function draw() {
 				}
 			}
 		}
-		if (isFiring && ballsShotFrame != 0 && (frameCount - ballsShotFrame) % framesPerBallShot === 1 && !(ballsToShoot.every(x => x === null) || ballsToShoot.length === 0) && !options.pause){
+		if (isFiring && ballsShotFrame != 0 && (frameCount - ballsShotFrame) % framesPerBallShot === 1 && !(ballsToShoot.every(x => x === null) || ballsToShoot.length === 0) && !options.pause) {
 			let i = 0
-			while (ballsToShoot[i] === null){
-				i ++
+			while (ballsToShoot[i] === null) {
+				i++
 			}
 			balls[ballsToShoot[i]].addSpeed(ballSpeed, -mouseAngle + 90)
 			ballsToShoot[i] = null
-			if (ballsToShoot.every(x => x === null) || ballsToShoot.length === 0){
+			if (ballsToShoot.every(x => x === null) || ballsToShoot.length === 0) {
 				isFiring = false
 			}
 		}
@@ -1299,7 +1313,7 @@ function draw() {
 			}
 			fill(0, 0, 0)
 			textFont(oswald, 20)
-			if (parseInt(currentEffects[effectsDrawQueue[i]]) > 99){
+			if (parseInt(currentEffects[effectsDrawQueue[i]]) > 99) {
 				switch (effectsDrawQueue[i]) {
 					case "power":
 					case "ghost":
@@ -1343,7 +1357,7 @@ function draw() {
 			}
 
 		}
-		if (!options.pause && phase[0] === "game" && !phase[1]){
+		if (!options.pause && phase[0] === "game" && !phase[1]) {
 			if (mouseIsPressed && currentEffects.ghost != 0 && mouseY > 100) {
 				blocks.overlap(balls)
 				for (let ball of balls) {
@@ -1366,7 +1380,7 @@ function draw() {
 		blocks.draw()
 		powerups.draw()
 		downWall.draw()
-		for (let particleGroup of allParticles){
+		for (let particleGroup of allParticles) {
 			particleGroup.group.draw()
 		}
 		if (!ballsInAir) {
@@ -1380,7 +1394,7 @@ function draw() {
 				fill(...ballColor)
 			}
 			textSize(17)
-			text("x" + ballNum.toString(), ballCenterPos.x - 7 * ballNum.toString().length, ballCenterPos.y + 37)
+			text("x" + ballNum.toString(), ballCenterPos.x - 1, ballCenterPos.y + 37)
 		}
 		balls.draw()
 		if (phase[1] === "game over screen") {
@@ -1434,37 +1448,37 @@ function draw() {
 			world.autoStep = true
 		}
 	} else if (phase[0] === "menu") {
-		if (kb.pressing("space")){
+		if (kb.pressing("space")) {
 			world.step(1 / (5 * slowMultiplier))
 			background(215, 180)
 		} else {
 			world.step(1 / (60 * slowMultiplier))
-			background(215, 50)
+			background(215, 60)
 		}
-		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot*10) === 1){
+		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot * 10) === 1) {
 			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, -20)
 			demoBallsToShoot.shift()
-			if (demoBallsToShoot.length === 0){
+			if (demoBallsToShoot.length === 0) {
 				demoBallsShotFrame = null
 			}
 		}
 		textFont(oswald, 100);
 		fill(0, 0, 0)
-		text("Break those", windowWidth/2, 100)
-		text("Blocks!", windowWidth/2, 200)
+		text("Break those", windowWidth / 2, 100)
+		text("Blocks!", windowWidth / 2, 200)
 
 		rect(0, 235, windowWidth, 10)
 		rect(0, windowHeight - 55, windowWidth, 10)
 		noStroke()
 		scoreDisplay.draw()
 		for (let spriteObject of [playButton, infoButton, leaderboardsButton, statsButton, musicButton, soundButton, tutorialButton,
-			autoSkipButton, ]){
+			autoSkipButton,]) {
 			spriteObject.draw()
 		}
-		for (let spriteObject of demoSpriteGroups){
+		for (let spriteObject of demoSpriteGroups) {
 			spriteObject.draw()
 		}
-		for (let spriteObject of allParticles){
+		for (let spriteObject of allParticles) {
 			spriteObject.group.draw()
 		}
 		textFont(oswald, 24)
@@ -1474,29 +1488,78 @@ function draw() {
 		textFont(oswald, 18)
 		text("Most blocks", blocksBrokenDisplay.x, blocksBrokenDisplay.y - 15)
 		text("broken:", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 8)
-		
-		text(localStorage.getItem(mode + "Blocks") ?  localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 33)
+
+		text(localStorage.getItem(mode + "Blocks") ? localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 33)
 		modeDisplay.draw()
 		modeDescription.draw()
 		textFont(oswald, modeTextSize[mode])
-		text(modeDescriptions[mode], modeDescription.x-90, modeDescription.y - 15, modeDescription.w, modeDescription.h)
-		if (phase[1]){
+		text(modeDescriptions[mode], modeDescription.x - 90, modeDescription.y - 15, modeDescription.w, modeDescription.h)
+		if (phase[1]) {
 			fill(0, 40)
 			rect(0, 0, windowWidth, windowHeight)
 			fill(123, 175, 226)
-			rect(220, 100, windowWidth - 220*2, windowHeight - 100*2)
+			rect(220, 100, windowWidth - 220 * 2, windowHeight - 100 * 2)
+			fill(0)
 		}
-		if (phase[1] === "info"){
-			text()
+		if (phase[1] === "info") {
+			textFont(oswald, 58)
+			text("Info", windowWidth / 2, 185)
+
+			// hot keys info
+			textFont(oswald, 38)
+			text("Hotkeys", windowWidth / 4 + 100, 220)
+			stroke(0)
+			strokeWeight(4)
+			line(windowWidth / 4 + 100 - 100, 240, windowWidth / 4 + 100 + 100, 240)
+			strokeWeight(0)
+			textFont(oswald, 28)
+			text("Fullscreen", windowWidth / 4 + 100 - 125, 300)
+			text("F", windowWidth / 4 + 100 + 135, 300)
+			text("Aim", windowWidth / 4 + 100 - 125, 340)
+			text("L/R arrow keys", windowWidth / 4 + 100 + 135, 340)
+			text("Shoot", windowWidth / 4 + 100 - 125, 380)
+			text("Enter", windowWidth / 4 + 100 + 135, 380)
+			text("Speed up balls", windowWidth / 4 + 100 - 125, 420)
+			text("Space", windowWidth / 4 + 100 + 135, 420)
+			text("Skip round", windowWidth / 4 + 100 - 125, 460)
+			text("X", windowWidth / 4 + 100 + 135, 460)
+			text("End game", windowWidth / 4 + 100 - 125, 500)
+			text("spam X :)", windowWidth / 4 + 100 + 135, 500)
+			text("Pause/Resume", windowWidth / 4 + 100 - 125, 540)
+			text("P", windowWidth / 4 + 100 + 135, 540)
+
+			// other stuff
+
+			textFont(oswald, 38)
+			text("Other stuff", windowWidth - (windowWidth / 4 + 100), 220)
+			stroke(0)
+			strokeWeight(4)
+			line(windowWidth - (windowWidth / 4 + 100) - 100, 240, windowWidth - (windowWidth / 4 + 100) + 100, 240)
+			strokeWeight(0)
+			textFont(oswald, 24)
+			text("I recommend using Ctrl/Cmd + and - to adjust the display size and playing in fullscreen mode.", windowWidth - (windowWidth / 4 + 100) - 225, 285, 450, 600)
+			text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
+			text("Features in progress: Leaderboards", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
+			text("If you notice any bugs, experience any issues, or have any questions, email me at breakblocks15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
+
+			// use ctrl/cmd + and - to adjust screen size
+			// -> f to fullscreen
+			// -> x to skip to next round
+			// -> left and right arrows to aim
+			// -> enter to shoot
+			// -> space to speed up balls
+			// -> p to pause/resume
 		}
-		if (phase[1] === "leaderboards"){
-			
+		if (phase[1] === "leaderboards") {
+			textFont(oswald, 58)
+			text("This feature is coming soon!", windowWidth / 2, 380)
 		}
-		if (phase[1] === "stats"){
+		if (phase[1] === "stats") {
+			textFont(oswald, 58)
+			text("Stats", windowWidth / 2, 185)
 		}
-		
 	}
-	if (tutorialButton.mouse.hovering()){
+	if (tutorialButton.mouse.hovering()) {
 		fill(...powerupBannerColor)
 		rotate(45)
 		rect(tutorialButton.x - 20, tutorialButton.y + 100, 100, 100, 10)
