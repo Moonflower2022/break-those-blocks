@@ -1594,7 +1594,7 @@ function draw() {
 			textFont(oswald, 24)
 			text("I recommend using Ctrl/Cmd + and - to adjust the display size and playing in fullscreen mode.", windowWidth - (windowWidth / 4 + 100) - 225, 285, 450, 600)
 			text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
-			text("Features in progress: Leaderboards", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
+			text("Features in progress: Leaderboards and Tutorial", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
 			text("If you notice any bugs, experience any issues, or have any questions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
 		}
 		if (phase[1] === "leaderboards") {
@@ -1636,14 +1636,14 @@ function draw() {
 //       -> total rounds survived
 		}
 	}
-	if (tutorialButton.mouse.hovering() && !phase[1]) {
-		fill(...powerupBannerColor)
-		rotate(45)
-		rect(tutorialButton.x - 20, tutorialButton.y + 100, 100, 100, 10)
-		rotate(-45)
-		rect(tutorialButton.x - 50, tutorialButton.y + 30, 100, 40, 10)
-		fill(0)
-		textFont(oswald, 20)
-		text("Tutorial", tutorialButton.x, tutorialButton.y + 56)
-	}
+	// if (tutorialButton.mouse.hovering() && !phase[1]) {
+	// 	fill(...powerupBannerColor)
+	// 	rotate(45)
+	// 	rect(tutorialButton.x - 20, tutorialButton.y + 100, 100, 100, 10)
+	// 	rotate(-45)
+	// 	rect(tutorialButton.x - 50, tutorialButton.y + 30, 100, 40, 10)
+	// 	fill(0)
+	// 	textFont(oswald, 20)
+	// 	text("Tutorial", tutorialButton.x, tutorialButton.y + 56)
+	// }
 }
