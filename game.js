@@ -1545,7 +1545,7 @@ function draw() {
 		text("Most blocks", blocksBrokenDisplay.x, blocksBrokenDisplay.y - 15)
 		text("broken:", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 8)
 
-		text(localStorage.getItem(mode + "Blocks") ? localStorage.getItem(mode + "Blocks") : "Zero", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 33)
+		text(localStorage.getItem(mode + "Blocks") ? localStorage.getItem(mode + "Blocks") : "0", blocksBrokenDisplay.x, blocksBrokenDisplay.y + 33)
 		modeDisplay.draw()
 		modeDescription.draw()
 		textFont(oswald, modeTextSize[mode])
@@ -1596,7 +1596,7 @@ function draw() {
 			//text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Break the blocks with the balls, and use the powerups to help you! Try out all of the modes.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Features in progress: Leaderboards and Tutorial", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
-			text("If you notice any bugs, experience any issues, have any questions, or have any suggestions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
+			text("If you notice any bugs, experience any issues, have any questions, or any suggestions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
 		}
 		if (phase[1] === "leaderboards") {
 			textFont(oswald, 65)
