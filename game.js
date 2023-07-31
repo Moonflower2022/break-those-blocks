@@ -12,6 +12,7 @@
 // tutorial
 // maybe revamp icons and color palette for blocks + buttons
 // and make options buttons highlight when hovered
+// add onscreen button for x to skip and other important stuff like p to pause
 // favicon
 // colors hard/annoying to see?
 // maybe make the demo settings randomize themselves
@@ -1134,7 +1135,7 @@ function keyPressed() {
 		}
 		if (keyCode === 32 && ballsInAir && !isFiring) {
 			for (let ball of balls) {
-				ball.speed = ball.speed * 1.25
+				ball.speed = ball.speed * 1.25 + 0.1
 			}
 		}
 		if (keyCode === 13 && !ballsInAir) { // enter
@@ -1453,6 +1454,11 @@ function draw() {
 			text("x" + ballNum.toString(), ballCenterPos.x - 1, ballCenterPos.y + 37)
 		}
 		balls.draw()
+		if (ballsInAir){
+			fill(0)
+			textFont(oswald, 28)
+			text("Press x to skip to the next round!", windowWidth/2, 722)
+		}
 		if (phase[1] === "game over screen") {
 			fill(0, 0, 0, 50)
 			rect(0, 100, windowWidth, windowHeight)
