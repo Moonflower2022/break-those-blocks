@@ -183,7 +183,6 @@ let ballCenterPos = {
 }
 let ballNum = 1
 let ballNumProxy = 1
-let speedups = 2
 let isFiring = false
 let ballsShotFrame = 0;
 let ballsToShoot = [];
@@ -222,7 +221,6 @@ function resetGame() {
 	}
 	ballNum = 1
 	ballNumProxy = 1
-	speedups = 2
 	isFiring = false
 	ballsShotFrame = 0
 	ballsToShoot = []
@@ -237,7 +235,7 @@ function resetGame() {
 	board = generateBoardFromDescription(board_description, mainConvertFunction)
 	roundIncrement(ballCenterPos.x)
 	mouseAngle = atan2((mouseX - ballCenterPos.x), (mouseY - ballCenterPos.y))
-	updateMousePos()
+	mouseMoved()
 }
 
 function genObjsNormal() {
@@ -460,7 +458,6 @@ function roundIncrement(ballXPos) {
 	firstX = null;
 	firstBallLanded = false;
 	ballCenterPos.x = ballXPos
-	speedups = 2
 
 	// check if a power up has reached last row
 	for (let i = 0; i < colNum; i++) {
@@ -511,7 +508,7 @@ function roundIncrement(ballXPos) {
 	updatePowerups()
 	checkWin()
 	shiftBoard()
-	updateMousePos()
+	mouseMoved()
 }
 
 function applySpeedToGroup(group, n, angle, timeMultiplier) {
@@ -571,16 +568,6 @@ function slowlySelfDestruct(group, n, timeMultiplier, originPhase) {
 
 function showTutorial() {
 
-}
-
-function updateMousePos() {
-	mouseAngle = atan2((mouseX - ballCenterPos.x), (mouseY - ballCenterPos.y))
-	if (mouseAngle > -(90 + mouseAngleCutoff) && mouseAngle < 0) {
-		mouseAngle = -(90 + mouseAngleCutoff)
-	}
-	if (mouseAngle >= 0 && mouseAngle < 90 + mouseAngleCutoff) {
-		mouseAngle = 90 + mouseAngleCutoff
-	}
 }
 
 function shootBalls() {
@@ -979,7 +966,13 @@ function ballpowerupCollision(powerup, ball) {
 
 function mouseMoved() {
 	if (phase[0] === "game" && !phase[1] && !isFiring && mouseY > 100 && !options.pause) {
-		updateMousePos()
+		mouseAngle = atan2((mouseX - ballCenterPos.x), (mouseY - ballCenterPos.y))
+		if (mouseAngle > -(90 + mouseAngleCutoff) && mouseAngle < 0) {
+			mouseAngle = -(90 + mouseAngleCutoff)
+		}
+		if (mouseAngle >= 0 && mouseAngle < 90 + mouseAngleCutoff) {
+			mouseAngle = 90 + mouseAngleCutoff
+		}
 	}
 	if (phase[0] === "menu" && !phase[1]) {
 		if (playButton.mouse.hovering()) {
@@ -1140,11 +1133,10 @@ function keyPressed() {
 		if (key === "x") {
 			skip()
 		}
-		if (keyCode === 32 && ballsInAir && !isFiring && speedups != 0) {
+		if (keyCode === 32 && ballsInAir && !isFiring) {
 			for (let ball of balls) {
-				ball.speed = ball.speed * 1.5
+				ball.speed = ball.speed * 1.25
 			}
-			speedups--
 		}
 		if (keyCode === 13 && !ballsInAir) { // enter
 			shootBalls()
@@ -1379,11 +1371,13 @@ function draw() {
 			if (parseInt(currentEffects[effectsDrawQueue[i]]) > 99) {
 				switch (effectsDrawQueue[i]) {
 					case "power":
+						text("Rounds left: >99", drawPos + 143, 66)
+						break
 					case "ghost":
-						text("Rounds left: >99", drawPos + 85, 66)
+						text("Rounds left: >99", drawPos + 150, 66)
 						break
 					case "double":
-						text("Rounds left: >99", drawPos + 50, 66)
+						text("Rounds left: >99", drawPos + 115, 66)
 						break
 				}
 			} else {
