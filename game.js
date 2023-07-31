@@ -14,24 +14,8 @@
 // and make options buttons highlight when hovered
 // favicon
 // colors hard/annoying to see?
+// maybe make the demo settings randomize themselves
 // why lag T_T
-
-// MAIN MENU
-// -> info
-//    -> include all the hotkeys
-//    -> write a blurb
-//    -> contanct maybe?
-//    -> features coming soon: tutorial and leaderboards
-// -> leaderboards 
-//    -> when clicked display smth saying this feature is coming soon!
-//    -> an input to display user's name on the scoreboard (either monitor it for extreme profanity or add some kind of check)
-// -> stats
-//    -> normal, hard, and power scores and blocks broken
-//    -> life time stats (dont put on leader boards, just display them under)
-//       -> total blocks broken
-//       -> total damage dealt
-//       -> total balls picked up
-//       -> total rounds survived
 
 // ANIMATION:
 // -> use of powerups
@@ -158,7 +142,7 @@ var balls, walls, blocks, testingWalls,
 	playButton, infoButton, leaderboardsButton, statsButton,
 	scoreDisplay, blocksBrokenDisplay, modeDisplay, modeDescription,
 	gameOverDropdown, demoSpriteGroups, demoBalls,
-	demoBlocks, demoBoard, demoTopWall, musicButton,
+	demoBlocks, demoBoard, demoTopWall, randomDemoAngle, musicButton,
 	soundButton, pauseButton, tutorialButton,
 	autoSkipButton, closeButton, // sprites + sprite groups including some signs and buttons
 	mouseAngle, board, firstX, randomNum, demoBallsShotFrame, demoBallsToShoot;// game logic
@@ -448,11 +432,24 @@ function roundIncrement(ballXPos) {
 	}
 
 	roundNum++
-	if (parseInt(localStorage.getItem(mode)) < roundNum - 1 || !localStorage.getItem(mode)) {
-		localStorage.setItem(mode, (roundNum - 1).toString())
+	if (parseInt(localStorage.getItem(mode + "Score")) < roundNum - 1 || !localStorage.getItem(mode + "Score")) {
+		localStorage.setItem(mode + "Score", (roundNum - 1).toString())
 		if (!newBest) {
 			newBest = true
 		}
+	}
+	if (parseInt(localStorage.getItem("Score")) < roundNum - 1 || !localStorage.getItem("Score")) {
+		localStorage.setItem("Score", (roundNum - 1).toString())
+	}
+	if (!localStorage.getItem(mode + "Survived")) {
+		localStorage.setItem(mode + "Survived", 1)
+	} else {
+		localStorage.setItem(mode + "Survived", (parseInt(localStorage.getItem(mode + "Survived")) + 1).toString())
+	}
+	if (!localStorage.getItem("Survived")) {
+		localStorage.setItem("Survived", 1)
+	} else {
+		localStorage.setItem("Survived", (parseInt(localStorage.getItem("Survived")) + 1).toString())
 	}
 	firstX = null;
 	firstBallLanded = false;
@@ -480,6 +477,16 @@ function roundIncrement(ballXPos) {
 		}
 	}
 	if (ballNumProxy != ballNum) {
+		if (!localStorage.getItem(mode + "Picked")) {
+			localStorage.setItem(mode + "Picked", ballNumProxy - ballNum)
+		} else {
+			localStorage.setItem(mode + "Picked", (parseInt(localStorage.getItem(mode + "Picked")) + ballNumProxy - ballNum).toString())
+		}
+		if (!localStorage.getItem("Picked")) {
+			localStorage.setItem("Picked", ballNumProxy - ballNum)
+		} else {
+			localStorage.setItem("Picked", (parseInt(localStorage.getItem("Picked")) + ballNumProxy - ballNum).toString())
+		}
 		ballNum = ballNumProxy
 	}
 	updateBalls(balls, ballNum, ballCenterPos.x)
@@ -602,6 +609,7 @@ function switchPhase() {
 function resetDemoBlocks() {
 	if (phase[0] === "menu") {
 		demoDescriptionCycleNum = (demoDescriptionCycleNum + 1) % 3
+		localStorage.setItem("menucycle", demoDescriptionCycleNum.toString())
 		demoBoard = generateBoardFromDescription(demoDescriptionCycle[demoDescriptionCycleNum], x => x)
 		textFont(oswald, 18)
 		for (let x = 0; x < colNum; x++) {
@@ -645,7 +653,7 @@ function menuCalls() {
 	demoTopWall = new Sprite(windowWidth / 2, 240, windowWidth, 10, "static")
 	demoTopWall.color = color(0, 0, 0)
 	demoWalls.add(demoTopWall)
-	demoBoard = generateBoardFromDescription(demoDescription1, x => x)
+	demoBoard = generateBoardFromDescription(demoDescriptionCycle[demoDescriptionCycleNum], x => x)
 
 	demoBalls.collide(walls)
 	demoBalls.collide(demoTopWall)
@@ -852,6 +860,30 @@ function ballBlockCollisionDemo(block) {
 function ballBlockCollision(block) {
 	currentEffects.power != 0 ? board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] -= 2 : board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]--
 	let blockNum = board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]
+	let damageNum = currentEffects.power != 0 ? 2 : 1
+	if (blockNum >= 0){
+		if (!localStorage.getItem(mode + "Damage")) {
+			localStorage.setItem(mode + "Damage", damageNum)
+		} else {
+			localStorage.setItem(mode + "Damage", (parseInt(localStorage.getItem(mode + "Damage")) + damageNum).toString())
+		}
+		if (!localStorage.getItem("Damage")) {
+			localStorage.setItem("Damage", damageNum)
+		} else {
+			localStorage.setItem("Damage", (parseInt(localStorage.getItem("Damage")) + damageNum).toString())
+		}
+	} else if (blockNum < 0){
+		if (!localStorage.getItem(mode + "Damage")) {
+			localStorage.setItem(mode + "Damage", 1)
+		} else {
+			localStorage.setItem(mode + "Damage", (parseInt(localStorage.getItem(mode + "Damage")) + 1).toString())
+		}
+		if (!localStorage.getItem("Damage")) {
+			localStorage.setItem("Damage", 1)
+		} else {
+			localStorage.setItem("Damage", (parseInt(localStorage.getItem("Damage")) + 1).toString())
+		}
+	}
 	if (blockNum > 0) {
 		block.text = blockNum.toString()
 
@@ -869,6 +901,19 @@ function ballBlockCollision(block) {
 			if (!newBest) {
 				newBest = true
 			}
+		}
+		if (parseInt(localStorage.getItem("Blocks")) < blocksBroken || !localStorage.getItem("Blocks")) {
+			localStorage.setItem("Blocks", blocksBroken.toString())
+		}
+		if (!localStorage.getItem(mode + "TotalBlocks")) {
+			localStorage.setItem(mode + "TotalBlocks", 1)
+		} else {
+			localStorage.setItem(mode + "TotalBlocks", (parseInt(localStorage.getItem(mode + "TotalBlocks")) + 1).toString())
+		}
+		if (!localStorage.getItem("TotalBlocks")) {
+			localStorage.setItem("TotalBlocks", 1)
+		} else {
+			localStorage.setItem("TotalBlocks", (parseInt(localStorage.getItem("TotalBlocks")) + 1).toString())
 		}
 		block.remove()
 		//floor(block.x / rectSize.x), floor((block.y-topMarginSpace ) / rectSize.y), board[floor((block.y-topMarginSpace )/ rectSize.y)][floor(block.x / rectSize.x)], 
@@ -1239,6 +1284,8 @@ function setup() {
 	menuCalls()
 	switchVisibility(false)
 	mode = localStorage.getItem("mode") ? localStorage.getItem("mode") : "Normal"
+	demoDescriptionCycleNum = localStorage.getItem("cyclenum") ? parseInt(localStorage.getItem("cyclenum")) : 0
+	randomDemoAngle = random(-5, -175)
 }
 
 //get blocks, the walls, the bottom as collision points
@@ -1287,6 +1334,16 @@ function draw() {
 				i++
 			}
 			balls[ballsToShoot[i]].addSpeed(ballSpeed, -mouseAngle + 90)
+			if (!localStorage.getItem(mode + "Launched")) {
+				localStorage.setItem(mode + "Launched", 1)
+			} else {
+				localStorage.setItem(mode + "Launched", (parseInt(localStorage.getItem(mode + "Launched")) + 1).toString())
+			}
+			if (!localStorage.getItem("Launched")) {
+				localStorage.setItem("Launched", 1)
+			} else {
+				localStorage.setItem("Launched", (parseInt(localStorage.getItem("Launched")) + 1).toString())
+			}
 			ballsToShoot[i] = null
 			if (ballsToShoot.every(x => x === null) || ballsToShoot.length === 0) {
 				isFiring = false
@@ -1412,7 +1469,7 @@ function draw() {
 			text("Mode: " + mode, gameOverDropdown.x, gameOverDropdown.y - 75)
 			text("Score: " + (roundNum - 1).toString(), gameOverDropdown.x, gameOverDropdown.y - 15)
 			textFont(oswald, 22)
-			text('Highscore: ' + (localStorage.getItem(mode) ? localStorage.getItem(mode) : 'None'), gameOverDropdown.x, gameOverDropdown.y + 15)
+			text('Highscore: ' + (localStorage.getItem(mode + "Score") ? localStorage.getItem(mode + "Score") : 'None'), gameOverDropdown.x, gameOverDropdown.y + 15)
 			textFont(oswald, 30)
 			text("Blocks broken: " + blocksBroken.toString(), gameOverDropdown.x, gameOverDropdown.y + 70)
 			textFont(oswald, 22)
@@ -1456,7 +1513,7 @@ function draw() {
 			background(215, 60)
 		}
 		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot * 10) === 1) {
-			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, -20)
+			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, randomDemoAngle)
 			demoBallsToShoot.shift()
 			if (demoBallsToShoot.length === 0) {
 				demoBallsShotFrame = null
@@ -1483,7 +1540,7 @@ function draw() {
 		}
 		textFont(oswald, 24)
 		text("Highscore:", scoreDisplay.x, scoreDisplay.y - 5)
-		text(localStorage.getItem(mode) ? localStorage.getItem(mode) : "None :P", scoreDisplay.x, scoreDisplay.y + 30)
+		text(localStorage.getItem(mode + "Score") ? localStorage.getItem(mode + "Score") : "None :P", scoreDisplay.x, scoreDisplay.y + 30)
 		blocksBrokenDisplay.draw()
 		textFont(oswald, 18)
 		text("Most blocks", blocksBrokenDisplay.x, blocksBrokenDisplay.y - 15)
@@ -1502,8 +1559,8 @@ function draw() {
 			fill(0)
 		}
 		if (phase[1] === "info") {
-			textFont(oswald, 58)
-			text("Info", windowWidth / 2, 185)
+			textFont(oswald, 65)
+			text("Info", windowWidth / 2, 195)
 
 			// hot keys info
 			textFont(oswald, 38)
@@ -1528,8 +1585,7 @@ function draw() {
 			text("Pause/Resume", windowWidth / 4 + 100 - 125, 540)
 			text("P", windowWidth / 4 + 100 + 135, 540)
 
-			// other stuff
-
+			// other stuff=
 			textFont(oswald, 38)
 			text("Other stuff", windowWidth - (windowWidth / 4 + 100), 220)
 			stroke(0)
@@ -1541,25 +1597,47 @@ function draw() {
 			text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Features in progress: Leaderboards", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
 			text("If you notice any bugs, experience any issues, or have any questions, email me at breakblocks15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
-
-			// use ctrl/cmd + and - to adjust screen size
-			// -> f to fullscreen
-			// -> x to skip to next round
-			// -> left and right arrows to aim
-			// -> enter to shoot
-			// -> space to speed up balls
-			// -> p to pause/resume
 		}
 		if (phase[1] === "leaderboards") {
-			textFont(oswald, 58)
-			text("This feature is coming soon!", windowWidth / 2, 380)
+			textFont(oswald, 65)
+			text("Leaderboards", windowWidth / 2, 195)
+			textFont(oswald, 40)
+			fill(255)
+			text("This feature is coming soon!", windowWidth / 2, 390)
 		}
 		if (phase[1] === "stats") {
-			textFont(oswald, 58)
-			text("Stats", windowWidth / 2, 185)
+			textFont(oswald, 65)
+			text("Statistics", windowWidth / 2, 195)
+			textFont(oswald, 30)
+			text("Highscore", windowWidth / 2 - 310, 295)
+			text("Total rounds survived", windowWidth / 2 - 310, 345)
+			text("Most blocks broken", windowWidth / 2 - 310, 395)
+			text("Total blocks broken", windowWidth / 2 - 310, 445)
+			text("Total damage dealt", windowWidth / 2 - 310, 495)
+			text("Total balls launched", windowWidth / 2 - 310, 545)
+			text("Total balls picked up", windowWidth / 2 - 310, 595)
+
+			text("Normal", windowWidth / 2 - 80, 250)
+			text("Hard", windowWidth / 2  + 80, 250)
+			text("Power", windowWidth / 2  + 240, 250)
+			text("All", windowWidth / 2  + 400, 250)
+			let textArr1 = ["Score", "Survived", "Blocks", "TotalBlocks", "Damage", "Launched", "Picked"]
+			let textArr2 = ["Normal", "Hard", "Power", ""]
+			for (let y in textArr1){
+				for (let x in textArr2){
+					text(localStorage.getItem(textArr2[x] + textArr1[y]) ? localStorage.getItem(textArr2[x] + textArr1[y]) : "-", windowWidth / 2 - 80 + 160*x, 295 + y*50)
+				}
+			}
+			// -> stats
+//    -> normal, hard, and power scores and blocks broken
+//    -> life time stats (dont put on leader boards, just display them under)
+//       -> total blocks broken
+//       -> total damage dealt
+//       -> total balls picked up
+//       -> total rounds survived
 		}
 	}
-	if (tutorialButton.mouse.hovering()) {
+	if (tutorialButton.mouse.hovering() && !phase[1]) {
 		fill(...powerupBannerColor)
 		rotate(45)
 		rect(tutorialButton.x - 20, tutorialButton.y + 100, 100, 100, 10)
