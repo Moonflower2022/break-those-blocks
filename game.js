@@ -1457,7 +1457,8 @@ function draw() {
 		if (ballsInAir){
 			fill(0)
 			textFont(oswald, 28)
-			text("Press x to skip to the next round!", windowWidth/2, 722)
+			text("Press x to skip to the next round!", windowWidth/2 + 300, 722)
+			text("Press the Space bar to speed up your balls!", windowWidth/2 - 300, 722)
 		}
 		if (phase[1] === "game over screen") {
 			fill(0, 0, 0, 50)
