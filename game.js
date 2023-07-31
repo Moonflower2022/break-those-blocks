@@ -35,6 +35,12 @@
 // -> achievements
 // -> skins for the balls?
 
+if (!localStorage.getItem("timesVisited")){
+	localStorage.setItem("timesVisited", "1")
+} else {
+	localStorage.setItem("timesVisited", (parseInt(localStorage.getItem("timesVisited")) + 1).toString())
+}
+
 const windowWidth = 1440
 const windowHeight = 739
 const gameWindowWidth = 1440
@@ -149,7 +155,7 @@ var balls, walls, blocks, testingWalls,
 
 
 // phases can be ["menu", "options"] ["game"] ["game", "options"] ["game", "game over screen"]
-let phase = ["menu"]
+let phase = localStorage.getItem("timesVisited") === "1" ? ["menu", "info"] : ["menu"]
 let difficulty = "easy"
 let options = {
 	sound: true,
@@ -1273,7 +1279,7 @@ function setup() {
 	}
 	closeButton = new Sprite(1165, 155, 64, 64, "kinematic")
 	closeButton.img = closeButtonImage
-	closeButton.visible = false
+	closeButton.visible = localStorage.getItem("timesVisited") === "1" ? true : false
 	// collision logic
 
 	balls.collide(walls)
