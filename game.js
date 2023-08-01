@@ -35,7 +35,7 @@
 // -> achievements
 // -> skins for the balls?
 
-if (!localStorage.getItem("timesVisited")){
+if (!localStorage.getItem("timesVisited")) {
 	localStorage.setItem("timesVisited", "1")
 } else {
 	localStorage.setItem("timesVisited", (parseInt(localStorage.getItem("timesVisited")) + 1).toString())
@@ -166,6 +166,7 @@ let options = {
 let mode;
 let demoDescriptionCycleNum = 0
 let allParticles = []
+let seenStuck = false
 
 // game variables
 
@@ -458,6 +459,14 @@ function roundIncrement(ballXPos) {
 	firstX = null;
 	firstBallLanded = false;
 	ballCenterPos.x = ballXPos
+	if (seenStuck){
+		seenStuck = false
+		if (!localStorage.getItem("stuck")){
+			localStorage.setItem("stuck", "1")
+		} else if (localStorage.getItem("stuck") === "1"){
+			localStorage.setItem("stuck", "2")
+		}
+	}
 
 	// check if a power up has reached last row
 	for (let i = 0; i < colNum; i++) {
@@ -854,7 +863,7 @@ function ballBlockCollision(block) {
 	currentEffects.power != 0 ? board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] -= 2 : board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]--
 	let blockNum = board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]
 	let damageNum = currentEffects.power != 0 ? 2 : 1
-	if (blockNum >= 0){
+	if (blockNum >= 0) {
 		if (!localStorage.getItem(mode + "Damage")) {
 			localStorage.setItem(mode + "Damage", damageNum)
 		} else {
@@ -865,7 +874,7 @@ function ballBlockCollision(block) {
 		} else {
 			localStorage.setItem("Damage", (parseInt(localStorage.getItem("Damage")) + damageNum).toString())
 		}
-	} else if (blockNum < 0){
+	} else if (blockNum < 0) {
 		if (!localStorage.getItem(mode + "Damage")) {
 			localStorage.setItem(mode + "Damage", 1)
 		} else {
@@ -1454,11 +1463,36 @@ function draw() {
 			text("x" + ballNum.toString(), ballCenterPos.x - 1, ballCenterPos.y + 37)
 		}
 		balls.draw()
-		if (ballsInAir){
+		if (ballsInAir) {
 			fill(0)
-			textFont(oswald, 28)
-			text("Press x to skip to the next round!", windowWidth/2 + 300, 722)
-			text("Press the Space bar to speed up your balls!", windowWidth/2 - 300, 722)
+			textFont(oswald, 22)
+			text("Press x to skip to the next round", windowWidth / 2 + 300, 722)
+			text("Press the Space bar to speed up your balls", windowWidth / 2 - 300, 722)
+		}
+		let bool1 = false
+		for (let ball of balls) {
+			if (ball.vel.y === 0) {
+				bool1 = true
+			}
+		}
+		let bool2 = false
+		for (let ball of balls) {
+			if (ball.vel.y === 0 && ball.vel.y === 0) {
+				bool2 = true
+			}
+		}
+		if (ballsInAir && !isFiring && bool2){
+			text("uh so its not moving thats probably a problem - what key could you press to speed it up? :P", windowWidth/2, 600)
+		} else if (ballsInAir && !isFiring && (bool1 || seenStuck)) {
+			fill(0)
+			textFont(oswald, 22)
+			seenStuck = true
+			if (!localStorage.getItem("stuck")){
+				text("Oh no! It seems that there is a ball that is bouncing back and fourth and its not doing anything! I wonder what button we could press that would let us solve this horrible problem?? (if its still hitting blocks, you can wait for it to be done) (if you don't see a stuck ball then just ignore this)", windowWidth/2 - 600, 543, 1200, 200)
+			}
+			if (localStorage.getItem("stuck") === "1"){
+				text("Might wanna get rid of this bad boy by pressing x as soon as it isn't doing anything, or if it just unstucks itself thats even better, ignore if no see stuck ball :)", windowWidth/2, 600)
+			}
 		}
 		if (phase[1] === "game over screen") {
 			fill(0, 0, 0, 50)
@@ -1603,7 +1637,7 @@ function draw() {
 			//text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Break the blocks with the balls, and use the powerups to help you! Try out all of the modes.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Features in progress: Leaderboards and Tutorial", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
-			text("If you notice any bugs, experience any issues, have any questions, or any suggestions, email me at blocksbreak15@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
+			text("If you notice any bugs, experience any issues, have any questions, or any suggestions, email me at moonflowur03@gmail.com. I will try to respond as fast as I can.", windowWidth - (windowWidth / 4 + 100) - 225, 510, 450, 600)
 		}
 		if (phase[1] === "leaderboards") {
 			textFont(oswald, 65)
@@ -1625,23 +1659,23 @@ function draw() {
 			text("Total balls picked up", windowWidth / 2 - 310, 595)
 
 			text("Normal", windowWidth / 2 - 80, 250)
-			text("Hard", windowWidth / 2  + 80, 250)
-			text("Power", windowWidth / 2  + 240, 250)
-			text("All", windowWidth / 2  + 400, 250)
+			text("Hard", windowWidth / 2 + 80, 250)
+			text("Power", windowWidth / 2 + 240, 250)
+			text("All", windowWidth / 2 + 400, 250)
 			let textArr1 = ["Score", "Survived", "Blocks", "TotalBlocks", "Damage", "Launched", "Picked"]
 			let textArr2 = ["Normal", "Hard", "Power", ""]
-			for (let y in textArr1){
-				for (let x in textArr2){
-					text(localStorage.getItem(textArr2[x] + textArr1[y]) ? localStorage.getItem(textArr2[x] + textArr1[y]) : "-", windowWidth / 2 - 80 + 160*x, 295 + y*50)
+			for (let y in textArr1) {
+				for (let x in textArr2) {
+					text(localStorage.getItem(textArr2[x] + textArr1[y]) ? localStorage.getItem(textArr2[x] + textArr1[y]) : "-", windowWidth / 2 - 80 + 160 * x, 295 + y * 50)
 				}
 			}
 			// -> stats
-//    -> normal, hard, and power scores and blocks broken
-//    -> life time stats (dont put on leader boards, just display them under)
-//       -> total blocks broken
-//       -> total damage dealt
-//       -> total balls picked up
-//       -> total rounds survived
+			//    -> normal, hard, and power scores and blocks broken
+			//    -> life time stats (dont put on leader boards, just display them under)
+			//       -> total blocks broken
+			//       -> total damage dealt
+			//       -> total balls picked up
+			//       -> total rounds survived
 		}
 	}
 	// if (tutorialButton.mouse.hovering() && !phase[1]) {
