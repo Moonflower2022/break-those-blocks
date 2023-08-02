@@ -7,9 +7,6 @@
 
 //TODO
 
-// TWEAK SOUNDS THEN SHARE
-// play ball twice when have double powerup
-// easy ball animations
 // add hover explainations for buttons in top right!!!!
 // why rotate not work
 // tutorial
@@ -18,6 +15,13 @@
 // colors hard/annoying to see?
 // maybe make the demo settings randomize themselves
 // why lag T_T
+
+// add sound for...
+// going into info screen
+// ball powerup activation when double powerup
+// ball bouncing with wall
+// skipping round instead of passing normally
+// using ghost mode
 
 // ANIMATION:
 // -> collecting balls (balls that hit the floor 
@@ -419,7 +423,6 @@ function checkGameOver() {
 				if (options.sound && phase[0] === "game" && phase[1] === "game over screen") wow.play()
 			}, 3000)
 		}
-
 	}
 	return gameOver
 }
@@ -763,6 +766,7 @@ function menuCalls() {
 	//applySpeedToGroup(demoBalls, 7, -20, slowMultiplier)
 	demoSpriteGroups.push(demoBalls, demoBlocks, demoWalls, demoButtons, demoDisplays)
 	cottagecore.play()
+	synthy.stop()
 }
 
 // updating sprites
@@ -1115,6 +1119,8 @@ function mousePressed(event) {
 				}
 				buttonClick.play('key')
 				gameStart.play()
+				cottagecore.stop()
+				synthy.play()
 			}
 			if (infoButton.mouse.hovering()) {
 				phase = ["menu", "info"]
@@ -1125,6 +1131,7 @@ function mousePressed(event) {
 				phase = ["menu", "leaderboards"]
 				closeButton.visible = true
 				buttonClick.play('key')
+				amogus.play('key')
 			}
 			if (statsButton.mouse.hovering()) {
 				phase = ["menu", "stats"]
@@ -1262,25 +1269,25 @@ function preload() {
 	statsButtonHighlightedImage = loadImage("assets/button images/stats highlighted.png")
 
 	// menu + 
-	closeButtonImage = loadImage("assets/buttons/close.png")
-	closeButtonHighlightedImage = loadImage("assets/buttons/close highlighted.png")
+	closeButtonImage = loadImage("assets/button images/close.png")
+	closeButtonHighlightedImage = loadImage("assets/button images/close highlighted.png")
 
 	// gameover screen
-	homeButtonImage = loadImage("assets/buttons/home button.png")
-	homeButtonHighlightedImage = loadImage("assets/buttons/home button highlighted.png")
-	restartButtonImage = loadImage("assets/buttons/restart button.png")
-	restartButtonHighlightedImage = loadImage("assets/buttons/restart button highlighted.png")
+	homeButtonImage = loadImage("assets/button images/home button.png")
+	homeButtonHighlightedImage = loadImage("assets/button images/home button highlighted.png")
+	restartButtonImage = loadImage("assets/button images/restart button.png")
+	restartButtonHighlightedImage = loadImage("assets/button images/restart button highlighted.png")
 
 	// options
-	musicButtonOnImage = loadImage("assets/buttons/music on.png")
-	musicButtonOffImage = loadImage("assets/buttons/music off.png")
-	soundButtonOnImage = loadImage("assets/buttons/sound on.png")
-	soundButtonOffImage = loadImage("assets/buttons/sound off.png")
-	pauseButtonImage = loadImage("assets/buttons/pause.png")
-	resumeButtonImage = loadImage("assets/buttons/resume.png")
-	autoSkipButtonImage = loadImage("assets/buttons/auto skip.png")
-	noAutoSkipButtonImage = loadImage("assets/buttons/no auto skip.png")
-	tutorialButtonImage = loadImage("assets/buttons/tutorial.png")
+	musicButtonOnImage = loadImage("assets/button images/music on.png")
+	musicButtonOffImage = loadImage("assets/button images/music off.png")
+	soundButtonOnImage = loadImage("assets/button images/sound on.png")
+	soundButtonOffImage = loadImage("assets/button images/sound off.png")
+	pauseButtonImage = loadImage("assets/button images/pause.png")
+	resumeButtonImage = loadImage("assets/button images/resume.png")
+	autoSkipButtonImage = loadImage("assets/button images/auto skip.png")
+	noAutoSkipButtonImage = loadImage("assets/button images/no auto skip.png")
+	tutorialButtonImage = loadImage("assets/button images/tutorial.png")
 
 	oswald = loadFont("assets/oswald.ttf")
 
@@ -1296,7 +1303,7 @@ function preload() {
 	ballHit = new Howl({src:"assets/sounds/balls/ball hit.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
 
 	// misc
-	amogus = new Howl({src:"assets/sounds/misc/amogus.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	amogus = new Howl({src:"assets/sounds/misc/amogus.mp3", sprite: {key: [200, 4000, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
 	boop = new Howl({src:"assets/sounds/misc/boop.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
 	wow = new Howl({src:"assets/sounds/misc/wow.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
 
@@ -1325,9 +1332,11 @@ function preload() {
 
 	sounds = [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, boop, wow, gameStart, gameover, newbest, roundPassed, ball, double, ghost, power, split, buttonClick, modeChange, stats]
 	//music
-	cottagecore = new Howl({src:"assets/music/cottagecore.mp3"})
+	cottagecore = new Howl({src:"assets/music/cottagecore.mp3", loop: true})
+	guitar = new Howl({src:"assets/music/guitar.mp3", loop: true})
+	synthy = new Howl({src:"assets/music/synthy.mp3", loop: true})
 
-	musics = [cottagecore]
+	musics = [cottagecore, guitar, synthy]
 }
 
 function setup() {
