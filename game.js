@@ -7,29 +7,21 @@
 
 //TODO
 
+// TWEAK SOUNDS THEN SHARE
+// play ball twice when have double powerup
+// easy ball animations
 // add hover explainations for buttons in top right!!!!
 // why rotate not work
 // tutorial
-// maybe revamp icons and color palette for blocks + buttons
 // and make options buttons highlight when hovered
-// add onscreen button for x to skip and other important stuff like p to pause
-// favicon
+// maybe revamp icons and color palette for blocks + buttons
 // colors hard/annoying to see?
 // maybe make the demo settings randomize themselves
 // why lag T_T
 
 // ANIMATION:
-// -> use of powerups
 // -> collecting balls (balls that hit the floor 
 // stay on the floor and when round over all them converge onto shooting point)
-
-// sound
-// -> ball hitting block
-// -> round passing
-// -> losing
-// -> clicking buttons
-// -> music
-// -> speedup
 
 // misc
 // -> achievements
@@ -140,7 +132,7 @@ xxxxxxxxxxxx
 const demoDescriptionCycle = [demoDescription1, demoDescription2, demoDescription3]
 const mouseAngleCutoff = 5
 const slowMultiplier = 16
-const exceptionBlocks = ["x", "p", "t", "i", "l", "m", "b", "s", "d"]
+const exceptionBlocks = [0, "x", "p", "t", "i", "l", "m", "b", "s", "d"]
 
 var balls, walls, blocks, testingWalls,
 	leftWall, rightWall, upWall,
@@ -167,6 +159,9 @@ let mode;
 let demoDescriptionCycleNum = 0
 let allParticles = []
 let seenStuck = false
+let userInteracted = false
+let pausedIds = []
+let pausedSounds = []
 
 // game variables
 
@@ -379,7 +374,7 @@ function shiftBoard() {
 	powerups.move(rectSize.y, "down", 5)
 }
 
-function checkWin() {
+function checkGameOver() {
 	let gameOver = false
 	for (let i = 0; i < colNum; i++) {
 		if (typeof board[rowNum - 2][i] === "number" && board[rowNum - 2][i] != 0) {
@@ -415,8 +410,18 @@ function checkWin() {
 				break
 		}
 		gameOverDropdown.move(shiftAmount, direction, 10)
+		if (newBest){
+			console.log("strt")
+			setTimeout(function(){
+				if (options.sound && phase[0] === "game" && phase[1] === "game over screen") newbest.play()
+			}, 2300)
+			setTimeout(function(){
+				if (options.sound && phase[0] === "game" && phase[1] === "game over screen") wow.play()
+			}, 3000)
+		}
 
 	}
+	return gameOver
 }
 
 function roundIncrement(ballXPos) {
@@ -515,7 +520,11 @@ function roundIncrement(ballXPos) {
 	}
 	updateBlocks()
 	updatePowerups()
-	checkWin()
+	if (options.sound && roundNum != 1){
+		checkGameOver() ? gameover.play() : roundPassed.play()
+	} else {
+		checkGameOver()
+	}
 	shiftBoard()
 	mouseMoved()
 }
@@ -598,6 +607,28 @@ function skip() {
 function pauseButtonCalls() {
 	options.pause = !options.pause
 	pauseButton.img = options.pause ? resumeButtonImage : pauseButtonImage
+	if (options.pause){
+		for (let sound of [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, 
+			boop, wow, gameStart, gameover, newbest, roundPassed, ball, 
+			double, ghost, power, split, buttonClick, modeChange, stats]){
+			if (sound.playing()){
+				sound.pause()
+				pausedSounds.push(sound)
+			}
+			
+		}
+	} else {
+		for (let soundId of pausedIds){
+			for (let sound of pausedSounds){
+				try {
+					sound.play(soundId)
+				} catch (error){
+
+				}
+			}
+		}
+		pausedSounds = []
+	}
 	mouseMoved()
 }
 
@@ -609,6 +640,7 @@ function switchPhase() {
 }
 
 function resetDemoBlocks() {
+	console.log("risent")
 	if (phase[0] === "menu") {
 		demoDescriptionCycleNum = (demoDescriptionCycleNum + 1) % 3
 		localStorage.setItem("menucycle", demoDescriptionCycleNum.toString())
@@ -730,6 +762,7 @@ function menuCalls() {
 	}
 	//applySpeedToGroup(demoBalls, 7, -20, slowMultiplier)
 	demoSpriteGroups.push(demoBalls, demoBlocks, demoWalls, demoButtons, demoDisplays)
+	cottagecore.play()
 }
 
 // updating sprites
@@ -837,24 +870,25 @@ function ballDownWallCollision(ball) {
 
 
 function ballBlockCollisionDemo(block) {
-	demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] = (parseInt(demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]) - 1).toString()
-	let blockNum = parseInt(demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)])
-	if (blockNum > 0) {
-		block.text = blockNum
-
-		for (let i = 0; i < blockColors.length; i++) {
-			if (isBetween(blockNum / 10, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
-				block.color = color(...blockColors[blockColors.length - i - 1])
-				break;
+	if (demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] != "x"){
+		demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] = (parseInt(demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]) - 1).toString()
+		let blockNum = parseInt(demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)])
+		ballHit.play()
+		if (blockNum > 0) {
+			block.text = blockNum
+			for (let i = 0; i < blockColors.length; i++) {
+				if (isBetween(blockNum / 10, i * 1 / blockColors.length, (i + 1) * 1 / blockColors.length)) {
+					block.color = color(...blockColors[blockColors.length - i - 1])
+					break;
+				}
 			}
-		}
-
-	} else if (blockNum <= 0) {
-		demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] = "x"
-		block.remove()
-		blockExposion(block)
-		if (checkEmpty(demoBoard, exceptionBlocks)) {
-			setTimeout(resetDemoBlocks, 4000)
+		} else if (blockNum <= 0) {
+			demoBoard[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] = "x"
+			block.remove()
+			blockExposion(block)
+			if (checkEmpty(demoBoard, exceptionBlocks)) {
+				setTimeout(resetDemoBlocks, 4000)
+			}
 		}
 	}
 }
@@ -863,6 +897,8 @@ function ballBlockCollision(block) {
 	currentEffects.power != 0 ? board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)] -= 2 : board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]--
 	let blockNum = board[floor((block.y - topMarginSpace) / rectSize.y)][floor(block.x / rectSize.x)]
 	let damageNum = currentEffects.power != 0 ? 2 : 1
+	damageNum === 2 ? powerBallHit.play() : ballHit.play()
+
 	if (blockNum >= 0) {
 		if (!localStorage.getItem(mode + "Damage")) {
 			localStorage.setItem(mode + "Damage", damageNum)
@@ -929,7 +965,7 @@ function ballBlockCollision(block) {
 	}
 }
 
-function ballpowerupCollision(powerup, ball) {
+function ballpowerupCollision(powerup, ballSprite) {
 	let powerupTag = board[floor((powerup.y - topMarginSpace) / rectSize.y)][floor(powerup.x / rectSize.x)]
 	if (powerupTag === "ball") {
 		board[floor((powerup.y - topMarginSpace) / rectSize.y)][floor(powerup.x / rectSize.x)] = 0
@@ -939,12 +975,14 @@ function ballpowerupCollision(powerup, ball) {
 		if (checkEmpty(board, [0, "split"]) && options.autoSkip) {
 			skip()
 		}
+		ball.play()
+		if (currentEffects.double != 0) setTimeout(function(){ball.play()}, 200)
 	} else if (powerupTag === "split") {
 		powerup.img = splitPowerupBigImage
 		setTimeout(function (splitSprite) {
 			splitSprite.img = splitPowerupImage
 		}, 50, powerup)
-		ball.direction = random(-170, -10)
+		ballSprite.direction = random(-170, -10)
 		if (!xyContains(posToSetZero, { x: floor(powerup.x / rectSize.x), y: floor((powerup.y - topMarginSpace) / rectSize.y) })) {
 			posToSetZero.push({ x: floor(powerup.x / rectSize.x), y: floor((powerup.y - topMarginSpace) / rectSize.y) })
 		}
@@ -952,6 +990,7 @@ function ballpowerupCollision(powerup, ball) {
 		if (checkEmpty(board, [0, "split"]) && options.autoSkip) {
 			skip()
 		}
+		split.play()
 	} else if (powerupTag === "double" || powerupTag === "power" || powerupTag === "ghost") {
 		board[floor((powerup.y - topMarginSpace) / rectSize.y)][floor(powerup.x / rectSize.x)] = 0
 		currentEffects[powerupTag] += powerupRoundEffectiveness[powerupTag]
@@ -967,6 +1006,13 @@ function ballpowerupCollision(powerup, ball) {
 		powerup.remove()
 		if (checkEmpty(board, [0, "split"]) && options.autoSkip) {
 			skip()
+		}
+		if (powerupTag === "double"){
+			double.play('key')
+		} else if (powerupTag === "power"){
+			power.play('key')
+		} else if (powerupTag === "ghost"){
+			ghost.play('key')
 		}
 	}
 }
@@ -1020,6 +1066,7 @@ function mouseMoved() {
 }
 
 function mousePressed(event) {
+	userInteracted = true
 	if (event.button === 0) {
 		if (((mouseX - ballCenterPos.x) ** 2 + (mouseY - ballCenterPos.y) ** 2) > (ballDiameter / 2) ** 2 &&
 			!ballsInAir &&
@@ -1039,6 +1086,7 @@ function mousePressed(event) {
 			gameOverDropdown.x = rectSize.x * 6
 			gameOverDropdown.y = rectSize.y * 5 + topMarginSpace
 			switchPhase()
+			buttonClick.play('key')
 		}
 		if (phase[0] === "game" && phase[1] === "game over screen" && gameOverPlayAgainButton.mouse.hovering()) {
 			phase = ["game"]
@@ -1049,6 +1097,7 @@ function mousePressed(event) {
 			gameOverDropdown.x = rectSize.x * 6
 			gameOverDropdown.y = rectSize.y * 5 + topMarginSpace
 			switchPhase()
+			buttonClick.play('key')
 		}
 		if (phase[0] === "menu" && !phase[1]) {
 			if (playButton.mouse.hovering()) {
@@ -1064,23 +1113,30 @@ function mousePressed(event) {
 					showTutorial()
 					//localStorage.setItem("seenTutorial", "true")
 				}
+				buttonClick.play('key')
+				gameStart.play()
 			}
 			if (infoButton.mouse.hovering()) {
 				phase = ["menu", "info"]
 				closeButton.visible = true
+				buttonClick.play('key')
 			}
 			if (leaderboardsButton.mouse.hovering()) {
 				phase = ["menu", "leaderboards"]
 				closeButton.visible = true
+				buttonClick.play('key')
 			}
 			if (statsButton.mouse.hovering()) {
 				phase = ["menu", "stats"]
 				closeButton.visible = true
+				buttonClick.play('key')
+				stats.play('key')
 			}
 			if (modeDisplay.mouse.hovering()) {
 				mode = modeRotation[(modeRotation.indexOf(mode) + 1) % 3]
 				modeDisplay.text = "Mode: " + mode
 				localStorage.setItem("mode", mode)
+				modeChange.play()
 			}
 		}
 		if (phase[0] === "menu" && phase[1]) {
@@ -1089,22 +1145,27 @@ function mousePressed(event) {
 				closeButton.visible = false
 				closeButton.img = closeButtonImage
 				mouseMoved()
+				buttonClick.play('key')
 			}
 		}
 		if (!(phase[0] === "menu" && phase[1])) {
 			if (musicButton.mouse.hovering()) {
 				options.music = !options.music
 				musicButton.img = options.music ? musicButtonOnImage : musicButtonOffImage
+				options.music ? musics.forEach(x => x.mute(false)) : musics.forEach(x => x.mute(true))
 				let tempOptions = JSON.parse(localStorage.getItem("options"))
 				tempOptions.music = options.music
 				localStorage.setItem("options", JSON.stringify(tempOptions))
+				buttonClick.play('key')
 			}
 			if (soundButton.mouse.hovering()) {
 				options.sound = !options.sound
 				soundButton.img = options.sound ? soundButtonOnImage : soundButtonOffImage
+				options.sound ? sounds.forEach(x => x.mute(false)) : sounds.forEach(x => x.mute(true))
 				let tempOptions = JSON.parse(localStorage.getItem("options"))
 				tempOptions.sound = options.sound
 				localStorage.setItem("options", JSON.stringify(tempOptions))
+				buttonClick.play('key')
 			}
 			if (autoSkipButton.mouse.hovering()) {
 				options.autoSkip = !options.autoSkip
@@ -1115,18 +1176,22 @@ function mousePressed(event) {
 				let tempOptions = JSON.parse(localStorage.getItem("options"))
 				tempOptions.autoSkip = options.autoSkip
 				localStorage.setItem("options", JSON.stringify(tempOptions))
+				buttonClick.play('key')
 			}
 			if (tutorialButton.mouse.hovering()) {
 				showTutorial()
+				buttonClick.play('key')
 			}
 		}
 		if (phase[0] === "game" && !phase[1] && pauseButton.mouse.hovering()) {
 			pauseButtonCalls()
+			buttonClick.play('key')
 		}
 	}
 }
 
 function keyPressed() {
+	userInteracted = true
 	if (key === "f") {
 		document.documentElement.requestFullscreen()
 	} else if (key === "2") {
@@ -1146,6 +1211,7 @@ function keyPressed() {
 			for (let ball of balls) {
 				ball.speed = ball.speed * 1.25 + 0.1
 			}
+			ballSpeedup.play('key')
 		}
 		if (keyCode === 13 && !ballsInAir) { // enter
 			shootBalls()
@@ -1164,27 +1230,36 @@ let ballPowerupAnimation, ghostPowerupAnimation,
 	pauseButtonImage, resumeButtonImage, autoskipButtonImage,
 	noAutoskipButtonImage, oswald // resources
 
+let ballHit, powerBallHit, ballSpeedup, shootBall, amogus, 
+boop, wow, gameStart, gameover, newbest, roundPassed, ball, 
+double, ghost, power, split, buttonClick, modeChange, stats
+
+let sounds;
+
+let cottagecore;
+
+let musics;
 function preload() {
 	//powerup graphics
-	ballPowerupAnimation = loadAnimation("assets/powerups/ball powerup.png", { frameSize: [70, 70], frames: 11 })
+	ballPowerupAnimation = loadAnimation("assets/powerup images/ball powerup.png", { frameSize: [70, 70], frames: 11 })
 	ballPowerupAnimation.frameDelay = 6
-	ghostPowerupAnimation = loadAnimation("assets/powerups/ghost powerup.png", { frameSize: [500, 500], frames: 14 })
+	ghostPowerupAnimation = loadAnimation("assets/powerup images/ghost powerup.png", { frameSize: [500, 500], frames: 14 })
 	ghostPowerupAnimation.frameDelay = 5
-	splitPowerupBigImage = loadImage("assets/powerups/split powerup big.png")
-	splitPowerupImage = loadImage("assets/powerups/split powerup.png")
-	powerPowerupImage = loadImage("assets/powerups/power powerup.png")
-	doublePowerupImage = loadImage("assets/powerups/double powerup.png")
+	splitPowerupBigImage = loadImage("assets/powerup images/split powerup big.png")
+	splitPowerupImage = loadImage("assets/powerup images/split powerup.png")
+	powerPowerupImage = loadImage("assets/powerup images/power powerup.png")
+	doublePowerupImage = loadImage("assets/powerup images/double powerup.png")
 	// button graphics
 
 	// menu
-	playButtonImage = loadImage("assets/buttons/play button.png")
-	playButtonHighlightedImage = loadImage("assets/buttons/play button highlighted.png")
-	infoButtonImage = loadImage("assets/buttons/info button.png")
-	infoButtonHighlightedImage = loadImage("assets/buttons/info button highlighted.png")
-	leaderboardsButtonImage = loadImage("assets/buttons/leaderboards.png")
-	leaderboardsButtonHighlightedImage = loadImage("assets/buttons/leaderboards highlighted.png")
-	statsButtonImage = loadImage("assets/buttons/stats.png")
-	statsButtonHighlightedImage = loadImage("assets/buttons/stats highlighted.png")
+	playButtonImage = loadImage("assets/button images/play button.png")
+	playButtonHighlightedImage = loadImage("assets/button images/play button highlighted.png")
+	infoButtonImage = loadImage("assets/button images/info button.png")
+	infoButtonHighlightedImage = loadImage("assets/button images/info button highlighted.png")
+	leaderboardsButtonImage = loadImage("assets/button images/leaderboards.png")
+	leaderboardsButtonHighlightedImage = loadImage("assets/button images/leaderboards highlighted.png")
+	statsButtonImage = loadImage("assets/button images/stats.png")
+	statsButtonHighlightedImage = loadImage("assets/button images/stats highlighted.png")
 
 	// menu + 
 	closeButtonImage = loadImage("assets/buttons/close.png")
@@ -1208,6 +1283,51 @@ function preload() {
 	tutorialButtonImage = loadImage("assets/buttons/tutorial.png")
 
 	oswald = loadFont("assets/oswald.ttf")
+
+	// sounds (howler)
+
+	// balls
+	
+	powerBallHit = new Howl({src:"assets/sounds/balls/power ball hit.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	powerBallHit.volume(0.9)
+	ballSpeedup = new Howl({src:"assets/sounds/balls/ball-speedup.wav", sprite:{key: [200, 1000, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	shootBall = new Howl({src:"assets/sounds/balls/shoot-ball.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	shootBall.volume(0.8)
+	ballHit = new Howl({src:"assets/sounds/balls/ball hit.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+
+	// misc
+	amogus = new Howl({src:"assets/sounds/misc/amogus.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	boop = new Howl({src:"assets/sounds/misc/boop.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	wow = new Howl({src:"assets/sounds/misc/wow.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+
+	// phase change
+	gameStart = new Howl({src:"assets/sounds/phase change/game start.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	gameStart.volume(0.6)
+	gameover = new Howl({src:"assets/sounds/phase change/gameover.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	newbest = new Howl({src:"assets/sounds/phase change/newbest.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	roundPassed = new Howl({src:"assets/sounds/phase change/round passed.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+
+	// powerups
+	ball = new Howl({src:"assets/sounds/powerups/ball.mp3", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	ball.volume(0.6)
+	double = new Howl({src:"assets/sounds/powerups/double.mp3", sprite: {key: [50, 1000, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	double.volume(0.7)
+	ghost = new Howl({src:"assets/sounds/powerups/ghost.wav", sprite: {key: [150, 1000, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	power = new Howl({src:"assets/sounds/powerups/power.wav", sprite: {key: [300, 1000, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	power.volume(0.8)
+	split = new Howl({src:"assets/sounds/powerups/split.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	split.volume(0.8)
+	// ui
+	buttonClick = new Howl({src:"assets/sounds/ui/button-click.wav", sprite: {key: [20, 200, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	modeChange = new Howl({src:"assets/sounds/ui/mode-change.wav", onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+	modeChange.volume(0.6)
+	stats = new Howl({src:"assets/sounds/ui/stats.wav", sprite: {key: [300, 400, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
+
+	sounds = [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, boop, wow, gameStart, gameover, newbest, roundPassed, ball, double, ghost, power, split, buttonClick, modeChange, stats]
+	//music
+	cottagecore = new Howl({src:"assets/music/cottagecore.mp3"})
+
+	musics = [cottagecore]
 }
 
 function setup() {
@@ -1220,6 +1340,8 @@ function setup() {
 	} else {
 		localStorage.setItem("options", JSON.stringify(options))
 	}
+	if (!options.sound) sounds.forEach(x => x.mute(true))
+	if (!options.music) musics.forEach(x => x.mute(true))
 	randomNum = random()
 	demoSpriteGroups = []
 
@@ -1355,6 +1477,7 @@ function draw() {
 			if (ballsToShoot.every(x => x === null) || ballsToShoot.length === 0) {
 				isFiring = false
 			}
+			shootBall.play()
 		}
 		fill(0, 0, 0)
 		textFont(oswald, 30)
@@ -1477,7 +1600,7 @@ function draw() {
 		}
 		let bool2 = false
 		for (let ball of balls) {
-			if (ball.vel.y === 0 && ball.vel.y === 0) {
+			if (ball.vel.y === 0 && ball.vel.x === 0) {
 				bool2 = true
 			}
 		}
@@ -1500,9 +1623,7 @@ function draw() {
 			gameOverDropdown.draw()
 			gameOverHomeButton.draw()
 			gameOverPlayAgainButton.draw()
-			strokeWeight(1)
 			fill(0, 0, 0)
-			stroke(3)
 			textFont(oswald, 50)
 			text("GAME OVER", gameOverDropdown.x, gameOverDropdown.y - 125)
 			textFont(oswald, 30)
@@ -1550,7 +1671,7 @@ function draw() {
 			background(215, 180)
 		} else {
 			world.step(1 / (60 * slowMultiplier))
-			background(215, 60)
+			background(215, 65)
 		}
 		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot * 10) === 1) {
 			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, randomDemoAngle)
@@ -1560,10 +1681,13 @@ function draw() {
 			}
 		}
 		textFont(oswald, 100);
-		fill(0, 0, 0)
+		fill(0)
 		text("Break those", windowWidth / 2, 100)
 		text("Blocks!", windowWidth / 2, 200)
-
+		if (!userInteracted){
+			textFont(oswald, 30)
+			text("click or press any key to start hearing audio", 250 - 100, 100, 200, 400)
+		}
 		rect(0, 235, windowWidth, 10)
 		rect(0, windowHeight - 55, windowWidth, 10)
 		noStroke()
@@ -1669,13 +1793,6 @@ function draw() {
 					text(localStorage.getItem(textArr2[x] + textArr1[y]) ? localStorage.getItem(textArr2[x] + textArr1[y]) : "-", windowWidth / 2 - 80 + 160 * x, 295 + y * 50)
 				}
 			}
-			// -> stats
-			//    -> normal, hard, and power scores and blocks broken
-			//    -> life time stats (dont put on leader boards, just display them under)
-			//       -> total blocks broken
-			//       -> total damage dealt
-			//       -> total balls picked up
-			//       -> total rounds survived
 		}
 	}
 	// if (tutorialButton.mouse.hovering() && !phase[1]) {
