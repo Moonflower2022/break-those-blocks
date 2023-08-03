@@ -166,6 +166,7 @@ let seenStuck = false
 let userInteracted = false
 let pausedIds = []
 let pausedSounds = []
+let tempSettings = {sound:null, music:null}
 
 // game variables
 
@@ -613,12 +614,11 @@ function pauseButtonCalls() {
 	if (options.pause){
 		for (let sound of [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, 
 			boop, wow, gameStart, gameover, newbest, roundPassed, ball, 
-			double, ghost, power, split, buttonClick, modeChange, stats]){
+			double, ghost, power, split, buttonClick, modeChange, stats, cottage]){
 			if (sound.playing()){
 				sound.pause()
 				pausedSounds.push(sound)
 			}
-			
 		}
 	} else {
 		for (let soundId of pausedIds){
@@ -765,7 +765,7 @@ function menuCalls() {
 	}
 	//applySpeedToGroup(demoBalls, 7, -20, slowMultiplier)
 	demoSpriteGroups.push(demoBalls, demoBlocks, demoWalls, demoButtons, demoDisplays)
-	cottagecore.play()
+	cottagecore.play('key')
 	synthy.stop()
 }
 
@@ -1163,6 +1163,14 @@ function mousePressed(event) {
 				let tempOptions = JSON.parse(localStorage.getItem("options"))
 				tempOptions.music = options.music
 				localStorage.setItem("options", JSON.stringify(tempOptions))
+				if (options.music){
+					if (tempSettings.music) document.getElementById("music").value = tempSettings.music
+					else document.getElementById("music").value = "100"
+				} else {
+					tempSettings.music = document.getElementById("music").value
+					document.getElementById("music").value = "0"
+				}
+				localStorage.setItem("music", document.getElementById("music").value)
 				buttonClick.play('key')
 			}
 			if (soundButton.mouse.hovering()) {
@@ -1172,6 +1180,14 @@ function mousePressed(event) {
 				let tempOptions = JSON.parse(localStorage.getItem("options"))
 				tempOptions.sound = options.sound
 				localStorage.setItem("options", JSON.stringify(tempOptions))
+				if (options.sound){
+					if (tempSettings.sound) document.getElementById("sound").value = tempSettings.sound
+					else document.getElementById("sound").value = "100"
+				} else {
+					tempSettings.sound = document.getElementById("sound").value
+					document.getElementById("sound").value = "0"
+				}
+				localStorage.setItem("sound", document.getElementById("sound").value)
 				buttonClick.play('key')
 			}
 			if (autoSkipButton.mouse.hovering()) {
@@ -1330,13 +1346,16 @@ function preload() {
 	modeChange.volume(0.6)
 	stats = new Howl({src:"assets/sounds/ui/stats.wav", sprite: {key: [300, 400, false]}, onend: function(id) {pausedIds.splice(pausedIds.indexOf(id), 1)}, onplay: function(id) {pausedIds.push(id)}})
 
-	sounds = [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, boop, wow, gameStart, gameover, newbest, roundPassed, ball, double, ghost, power, split, buttonClick, modeChange, stats]
+	sounds = [ballHit, powerBallHit, ballSpeedup, shootBall, amogus, boop, wow, gameStart, gameover, newbest, roundPassed, ball, double, 
+		ghost, power, split, buttonClick, modeChange, stats]
+	soundsOriginalVolume = [1, 0.9, 1, 0.8, 1, 1, 1, 0.6, 1, 1, 1, 0.6, 0.7, 1, 0.8, 0.8, 1, 0.6, 1]
 	//music
-	cottagecore = new Howl({src:"assets/music/cottagecore.mp3", loop: true})
+	cottagecore = new Howl({src:"assets/music/cottagecore.mp3", sprite: {key: [0, 243000, true]}})
 	guitar = new Howl({src:"assets/music/guitar.mp3", loop: true})
 	synthy = new Howl({src:"assets/music/synthy.mp3", loop: true})
 
 	musics = [cottagecore, guitar, synthy]
+	musicsOriginalVolume = [1, 1, 1]
 }
 
 function setup() {
@@ -1403,12 +1422,14 @@ function setup() {
 	} else {
 		musicButton.img = musicButtonOffImage
 	}
+	//document.getElementById("music").style.transform = "translate(" + (musicButton.x).toString() + "px, 10px) rotate(-90deg);"
 	soundButton = new Sprite(windowWidth - 295 + 58 * 4 + 20, 50, 40, 40, "kinematic")
 	if (JSON.parse(localStorage.getItem("options")).sound === true) {
 		soundButton.img = soundButtonOnImage
 	} else {
 		soundButton.img = soundButtonOffImage
 	}
+	//document.getElementById("sound").style.transform = "translate(" + (soundButton.x).toString() + "px, 10px) rotate(-90deg);"
 	closeButton = new Sprite(1165, 155, 64, 64, "kinematic")
 	closeButton.img = closeButtonImage
 	closeButton.visible = localStorage.getItem("timesVisited") === "1" ? true : false
@@ -1424,6 +1445,30 @@ function setup() {
 	mode = localStorage.getItem("mode") ? localStorage.getItem("mode") : "Normal"
 	demoDescriptionCycleNum = localStorage.getItem("cyclenum") ? parseInt(localStorage.getItem("cyclenum")) : 0
 	randomDemoAngle = random(-5, -175)
+	document.getElementById("music").oninput = function (){
+		for (let i in musics){
+			musics[i].volume(musicsOriginalVolume[i]*document.getElementById("music").value/100)
+		}
+		if (document.getElementById("music").value === "0"){
+			musicButton.img = musicButtonOffImage
+		} else {
+			musicButton.img = musicButtonOnImage
+		}
+		localStorage.setItem("sound", document.getElementById("sound").value)
+	}
+	document.getElementById("sound").oninput = function (){
+		for (let i in sounds){
+			sounds[i].volume(soundsOriginalVolume[i]*document.getElementById("sound").value/100)
+		}	
+		if (document.getElementById("sound").value === "0"){
+			soundButton.img = soundButtonOffImage
+		} else {
+			soundButton.img = soundButtonOnImage
+		}
+		localStorage.setItem("music", document.getElementById("music").value)
+	}
+	document.getElementById("sound").value = localStorage.getItem("sound") ? localStorage.getItem("sound") : "100"
+	document.getElementById("music").value = localStorage.getItem("music") ? localStorage.getItem("music") : "100"
 }
 
 //get blocks, the walls, the bottom as collision points
@@ -1803,6 +1848,17 @@ function draw() {
 				}
 			}
 		}
+	}
+	let extra = 5
+	if (soundButton.mouse.hovering() || (soundButton.x - soundButton.w/2 - extra < mouseX && mouseX < soundButton.x + soundButton.w/2 + extra && soundButton.y - soundButton.h/2 <= mouseY && mouseY < 220 && document.getElementById("sound").style.visibility === "visible")){
+		document.getElementById("sound").style.visibility = "visible"
+	} else {
+		document.getElementById("sound").style.visibility = "hidden"
+	}
+	if (musicButton.mouse.hovering() || (musicButton.x - musicButton.w/2 - extra < mouseX && mouseX < musicButton.x + musicButton.w/2 + extra&& musicButton.y - musicButton.h/2 <= mouseY && mouseY < 220 && document.getElementById("music").style.visibility === "visible")){
+		document.getElementById("music").style.visibility = "visible"
+	} else {
+		document.getElementById("music").style.visibility = "hidden"
 	}
 	// if (tutorialButton.mouse.hovering() && !phase[1]) {
 	// 	fill(...powerupBannerColor)

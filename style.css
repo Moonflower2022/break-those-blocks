@@ -1,0 +1,50 @@
+.p5Canvas {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.slider {
+    -webkit-appearance: none;
+    position: absolute;
+    z-index: 1;
+    top: 120px;
+    transform: rotate(-90deg);
+    visibility: hidden;
+    /*width:20px;
+    height:20px;
+    box-shadow:0 0 5px 0 rgba(0,0,0,0.3); */
+}
+
+input[type="range"]{
+    background: linear-gradient(to right, #fafafa 0%, #fafafa 100%);
+    background-size:150px 10px;
+    background-position:center;
+    background-repeat:no-repeat;
+    overflow:hidden;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;
+    height:20px;
+    background:#3388ff;
+    position:relative;
+    z-index:2;
+    box-shadow:0 0 5px 0 rgba(0,0,0,0.3);
+}
+
+input[type="range"]::-webkit-slider-thumb:after{
+    content:" ";
+    width:160px;
+    height:10px;
+    position:absolute;
+    z-index:1;
+    right:20px;
+    top:5px;
+    background: #0b9eff;
+    background: linear-gradient(to right, #f088fc 1%, #AC6CFF 70%);
+}

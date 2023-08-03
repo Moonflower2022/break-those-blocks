@@ -4,17 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <title>Break those Blocks!</title>
-    <style>
-        .p5Canvas {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-        }
-    </style>
+    <link rel="stylesheet" href="style.css"></link>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald&display=swap">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
@@ -29,6 +22,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.js"></script>
     <script src="helpers.js"></script>
     <script src="game.js"></script>
+    <input class="slider" id="sound" type="range" min="0" max="100" value="100" step="1" style="left:1373px" ></input>
+    <input class="slider" id="music" type="range" min="0" max="100" value="100" step="1" style="left:1315px" ></input>
 </body>
 
 </html>
