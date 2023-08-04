@@ -416,7 +416,6 @@ function checkGameOver() {
 		}
 		gameOverDropdown.move(shiftAmount, direction, 10)
 		if (newBest){
-			console.log("strt")
 			setTimeout(function(){
 				if (options.sound && phase[0] === "game" && phase[1] === "game over screen") newbest.play()
 			}, 2300)
@@ -643,7 +642,6 @@ function switchPhase() {
 }
 
 function resetDemoBlocks() {
-	console.log("risent")
 	if (phase[0] === "menu") {
 		demoDescriptionCycleNum = (demoDescriptionCycleNum + 1) % 3
 		localStorage.setItem("menucycle", demoDescriptionCycleNum.toString())
