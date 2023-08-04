@@ -1,16 +1,16 @@
-.p5Canvas {
+/*.p5Canvas {
     position: absolute;
     z-index: 0;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-}
+}*/
 
 .slider {
     -webkit-appearance: none;
     position: absolute;
     z-index: 1;
-    top: 120px;
+    top: 140px;
     transform: rotate(-90deg);
     visibility: hidden;
     /*width:20px;

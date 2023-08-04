@@ -1354,6 +1354,7 @@ function preload() {
 
 	musics = [cottagecore, guitar, synthy]
 	musicsOriginalVolume = [1, 1, 1]
+
 }
 
 function setup() {
@@ -1452,7 +1453,7 @@ function setup() {
 		} else {
 			musicButton.img = musicButtonOnImage
 		}
-		localStorage.setItem("sound", document.getElementById("sound").value)
+		localStorage.setItem("music", document.getElementById("music").value)
 	}
 	document.getElementById("sound").oninput = function (){
 		for (let i in sounds){
@@ -1463,10 +1464,16 @@ function setup() {
 		} else {
 			soundButton.img = soundButtonOnImage
 		}
-		localStorage.setItem("music", document.getElementById("music").value)
+		localStorage.setItem("sound", document.getElementById("sound").value)
 	}
-	document.getElementById("sound").value = localStorage.getItem("sound") ? localStorage.getItem("sound") : "100"
-	document.getElementById("music").value = localStorage.getItem("music") ? localStorage.getItem("music") : "100"
+	document.getElementById("sound").value = localStorage.getItem("sound") ? localStorage.getItem("sound") : "50"
+	document.getElementById("music").value = localStorage.getItem("music") ? localStorage.getItem("music") : "50"
+	for (let i in musics){
+		musics[i].volume(musicsOriginalVolume[i]*document.getElementById("music").value/100)
+	}
+	for (let i in sounds){
+		sounds[i].volume(soundsOriginalVolume[i]*document.getElementById("sound").value/100)
+	}
 }
 
 //get blocks, the walls, the bottom as collision points
@@ -1789,9 +1796,9 @@ function draw() {
 			text("Fullscreen", windowWidth / 4 + 100 - 125, 300)
 			text("F", windowWidth / 4 + 100 + 135, 300)
 			text("Aim", windowWidth / 4 + 100 - 125, 340)
-			text("L/R arrow keys", windowWidth / 4 + 100 + 135, 340)
+			text("Left/Right arrow keys or mouse", windowWidth / 4 + 100 + 135, 340)
 			text("Shoot", windowWidth / 4 + 100 - 125, 380)
-			text("Enter", windowWidth / 4 + 100 + 135, 380)
+			text("Enter or click", windowWidth / 4 + 100 + 135, 380)
 			text("Speed up balls", windowWidth / 4 + 100 - 125, 420)
 			text("Space", windowWidth / 4 + 100 + 135, 420)
 			text("Skip round", windowWidth / 4 + 100 - 125, 460)
@@ -1799,7 +1806,7 @@ function draw() {
 			text("End game", windowWidth / 4 + 100 - 125, 500)
 			text("spam X :)", windowWidth / 4 + 100 + 135, 500)
 			text("Pause/Resume", windowWidth / 4 + 100 - 125, 540)
-			text("P", windowWidth / 4 + 100 + 135, 540)
+			text("P or pause button", windowWidth / 4 + 100 + 135, 540)
 
 			// other stuff=
 			textFont(oswald, 38)
@@ -1809,7 +1816,7 @@ function draw() {
 			line(windowWidth - (windowWidth / 4 + 100) - 100, 240, windowWidth - (windowWidth / 4 + 100) + 100, 240)
 			strokeWeight(0)
 			textFont(oswald, 24)
-			text("I recommend using Ctrl/Cmd + and - to adjust the display size and playing in fullscreen mode.", windowWidth - (windowWidth / 4 + 100) - 225, 285, 450, 600)
+			text("If you can't see the full screen, use Ctrl/Cmd + and - to adjust the display size.", windowWidth - (windowWidth / 4 + 100) - 225, 285, 450, 600)
 			//text("If you get confused on how to play, click on the question mark in the top right of the screen.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Break the blocks with the balls, and use the powerups to help you! Try out all of the modes.", windowWidth - (windowWidth / 4 + 100) - 225, 370, 450, 600)
 			text("Features in progress: Leaderboards and Tutorial", windowWidth - (windowWidth / 4 + 100) - 225, 455, 450, 600)
