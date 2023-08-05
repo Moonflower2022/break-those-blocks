@@ -37,6 +37,12 @@ if (!localStorage.getItem("timesVisited")) {
 	localStorage.setItem("timesVisited", (parseInt(localStorage.getItem("timesVisited")) + 1).toString())
 }
 
+window.addEventListener('keydown', function(e) {
+	if(e.keyCode == 32 && e.target == document.body) {
+	  e.preventDefault();
+	}
+});
+
 const windowWidth = 1440
 const windowHeight = 739
 const gameWindowWidth = 1440
@@ -164,6 +170,7 @@ let demoDescriptionCycleNum = 0
 let allParticles = []
 let seenStuck = false
 let userInteracted = false
+let userHasPressedSpace = false
 let pausedIds = []
 let pausedSounds = []
 let tempSettings = {sound:null, music:null}
@@ -668,6 +675,7 @@ function resetDemoBlocks() {
 				}
 			}
 		}
+		roundPassed.play()
 	}
 }
 
@@ -1224,11 +1232,14 @@ function keyPressed() {
 	if (key === "p" && phase[0] === "game" && !phase[1]) {
 		pauseButtonCalls()
 	}
+	if (keyCode === 32){
+		userHasPressedSpace = true
+	}
 	if (phase[0] === "game" && !phase[1] && !options.pause) {
 		if (key === "x") {
 			skip()
 		}
-		if (keyCode === 32 && ballsInAir && !isFiring) {
+		if (keyCode === 32 && ballsInAir && !isFiring) { // spacebar
 			for (let ball of balls) {
 				ball.speed = ball.speed * 1.25 + 0.1
 			}
@@ -1450,9 +1461,14 @@ function setup() {
 		}
 		if (document.getElementById("music").value === "0"){
 			musicButton.img = musicButtonOffImage
+			options.music = false
 		} else {
 			musicButton.img = musicButtonOnImage
+			options.music = true
 		}
+		let tempOptions = JSON.parse(localStorage.getItem("options"))
+		tempOptions.music = options.music
+		localStorage.setItem("options", JSON.stringify(tempOptions))
 		localStorage.setItem("music", document.getElementById("music").value)
 	}
 	document.getElementById("sound").oninput = function (){
@@ -1461,9 +1477,14 @@ function setup() {
 		}	
 		if (document.getElementById("sound").value === "0"){
 			soundButton.img = soundButtonOffImage
+			options.sound = false
 		} else {
 			soundButton.img = soundButtonOnImage
+			options.sound = true
 		}
+		let tempOptions = JSON.parse(localStorage.getItem("options"))
+		tempOptions.sound = options.sound
+		localStorage.setItem("options", JSON.stringify(tempOptions))
 		localStorage.setItem("sound", document.getElementById("sound").value)
 	}
 	document.getElementById("sound").value = localStorage.getItem("sound") ? localStorage.getItem("sound") : "50"
@@ -1746,6 +1767,10 @@ function draw() {
 		if (!userInteracted){
 			textFont(oswald, 30)
 			text("click or press any key to start hearing audio", 250 - 100, 100, 200, 400)
+		}
+		if (!userHasPressedSpace){
+			textFont(oswald, 30)
+			text("hold space to speed up the balls", 1200 - 100, 125, 200, 400)
 		}
 		rect(0, 235, windowWidth, 10)
 		rect(0, windowHeight - 55, windowWidth, 10)
