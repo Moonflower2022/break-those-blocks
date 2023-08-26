@@ -541,7 +541,8 @@ function roundIncrement(ballXPos) {
 
 function applySpeedToGroup(group, n, angle, timeMultiplier) {
 	if (n >= 1 && isFiring) {
-		group[n - 1].addSpeed(ballSpeed, angle)
+		group[n - 1].speed = ballSpeed;
+		group[n - 1].direction = angle;
 		setTimeout(applySpeedToGroup, 50 * timeMultiplier, group, n - 1, angle, timeMultiplier)
 	} else {
 		isFiring = false
@@ -1542,7 +1543,8 @@ function draw() {
 			while (ballsToShoot[i] === null) {
 				i++
 			}
-			balls[ballsToShoot[i]].addSpeed(ballSpeed, -mouseAngle + 90)
+			balls[ballsToShoot[i]].speed = ballSpeed
+			balls[ballsToShoot[i]].direction = -mouseAngle + 90
 			if (!localStorage.getItem(mode + "Launched")) {
 				localStorage.setItem(mode + "Launched", 1)
 			} else {
@@ -1754,7 +1756,8 @@ function draw() {
 			background(215, 65)
 		}
 		if (demoBallsShotFrame != null && (frameCount - demoBallsShotFrame) % (kb.pressing("space") ? framesPerBallShot : framesPerBallShot * 10) === 1) {
-			demoBalls[demoBallsToShoot[0]].addSpeed(ballSpeed, randomDemoAngle)
+			demoBalls[demoBallsToShoot[0]].speed = ballSpeed
+			demoBalls[demoBallsToShoot[0]].direction = randomDemoAngle
 			demoBallsToShoot.shift()
 			if (demoBallsToShoot.length === 0) {
 				demoBallsShotFrame = null
